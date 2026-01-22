@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/((?!assets|.*\\.svg|.*\\.png|.*\\.jpg|.*\\.ico).*)", "destination": "/" }
+    { "source": "/AUTHENTICATE/:path*", "destination": "/" },
+    { "source": "/verify/:path*", "destination": "/" }
   ],
   "headers": [
     {
