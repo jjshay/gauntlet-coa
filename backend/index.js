@@ -342,21 +342,22 @@ app.get('/api/verify/:coaCode', async (req, res) => {
     const blockchainStatus = await verifyNFT(normalizedCode);
 
     // Step 3: Build and return response
+    // Map various possible column names to our standard fields
     const response = {
       success: true,
       coa: {
         code: normalizedCode,
-        artist: coaData.artist || '',
-        title: coaData.title || '',
-        date: coaData.date || '',
+        artist: coaData.artist || coaData.ARTIST || '',
+        title: coaData.title || coaData.Title || '',
+        date: coaData.date || coaData.year || coaData.Year || '',
         dimensions: {
-          length: coaData.length || '',
-          width: coaData.width || ''
+          length: coaData.length || coaData['c:_item_length'] || coaData['c:_art_l'] || '',
+          width: coaData.width || coaData['c:_item_width'] || coaData['c:_art_w'] || ''
         },
-        edition: coaData.edition || '',
-        number: coaData.number || '',
-        history: coaData.history || '',
-        imageUrl: coaData.image_url || ''
+        edition: coaData.edition || coaData.Edition || '',
+        number: coaData.number || coaData.Number || '',
+        history: coaData.history || coaData.description || coaData.Description || '',
+        imageUrl: coaData.image_url || coaData.thumbnail || coaData.THUMBNAIL || ''
       },
       blockchain: blockchainStatus,
       verifiedAt: new Date().toISOString()
