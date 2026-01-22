@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <!-- Background -->
+  <rect width="200" height="60" fill="transparent"/>
+
+  <!-- Shield/Gauntlet Icon -->
+  <g transform="translate(10, 5)">
+    <!-- Outer shield shape -->
+    <path d="M25 5 L45 5 L45 30 L35 45 L25 45 L15 30 L15 5 Z"
+          fill="none" stroke="#c9a962" stroke-width="2"/>
+    <!-- Inner frame (like artwork frame) -->
+    <rect x="20" y="10" width="20" height="25" fill="none" stroke="#c9a962" stroke-width="1.5"/>
+    <!-- Stylized G -->
+    <text x="30" y="30" font-family="serif" font-size="16" font-weight="bold" fill="#c9a962" text-anchor="middle">G</text>
+  </g>
+
+  <!-- GAUNTLET text -->
+  <text x="70" y="28" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="700" letter-spacing="0.15em" fill="#c9a962">GAUNTLET</text>
+
+  <!-- GALLERY text -->
+  <text x="70" y="45" font-family="'Inter', Arial, sans-serif" font-size="10" font-weight="400" letter-spacing="0.3em" fill="#a0a0a0">GALLERY</text>
+</svg>

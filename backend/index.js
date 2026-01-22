@@ -141,18 +141,29 @@ async function initGoogleSheets() {
   }
 
   try {
-    // Parse the JSON credentials from environment variable
-    // Note: Credentials are stored as a single-line JSON string
+    let credentialsJson = process.env.GOOGLE_CREDENTIALS;
+
+    // Check if credentials are base64 encoded (doesn't start with {)
+    if (!credentialsJson.trim().startsWith('{')) {
+      console.log('Decoding base64 credentials');
+      credentialsJson = Buffer.from(credentialsJson, 'base64').toString('utf8');
+    }
+
+    console.log('Parsing credentials...');
+    let credentials = JSON.parse(credentialsJson);
+    console.log('Parsed successfully, client_email:', credentials.client_email);
+
     const auth = new google.auth.GoogleAuth({
-      credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+      credentials: credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
     });
 
     // Create Sheets API client
     sheets = google.sheets({ version: 'v4', auth });
-    console.log('Google Sheets initialized');
+    console.log('Google Sheets initialized successfully');
   } catch (err) {
     console.error('Failed to init Google Sheets:', err.message);
+    console.error('Full error:', err);
   }
 }
 
@@ -173,6 +184,11 @@ async function initGoogleSheets() {
  * // Returns: { coa_code: "290745", artist: "Shepard Fairey", title: "...", ... }
  */
 async function getCOAFromSheet(coaCode) {
+  // Check if sheets client is initialized
+  if (!sheets) {
+    throw new Error('Google Sheets not initialized - check GOOGLE_CREDENTIALS');
+  }
+
   // Fetch all data from the sheet (columns A through K)
   // Range format: SheetName!A:K means columns A-K, all rows
   const response = await sheets.spreadsheets.values.get({
@@ -290,9 +306,23 @@ async function verifyNFT(coaCode) {
  * @returns {Object} { status: "ok", timestamp: "ISO date string" }
  */
 app.get('/health', (req, res) => {
+  let parseError = null;
+  let clientEmail = null;
+  try {
+    const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}');
+    clientEmail = creds.client_email || 'not found';
+  } catch (e) {
+    parseError = e.message;
+  }
+
   res.json({
     status: 'ok',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    sheetsReady: !!sheets,
+    credentialsSet: !!process.env.GOOGLE_CREDENTIALS,
+    credentialsLength: process.env.GOOGLE_CREDENTIALS?.length || 0,
+    parseError: parseError,
+    clientEmail: clientEmail
   });
 });
 

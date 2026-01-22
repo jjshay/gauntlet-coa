@@ -121,8 +121,7 @@ function App() {
     <div className="app">
       <header>
         <div className="logo">
-          <span className="logo-text">GAUNTLET</span>
-          <span className="logo-subtext">GALLERY</span>
+          <img src="/logo.svg" alt="Gauntlet Gallery" className="logo-image" />
         </div>
       </header>
 
@@ -195,15 +194,24 @@ function App() {
                 </div>
               </div>
 
-              {result.coa.imageUrl && (
-                <div className="artwork-image">
+              <div className="coa-images">
+                {result.coa.imageUrl && (
+                  <div className="artwork-image">
+                    <img
+                      src={`${API_URL}/api/image/${result.coa.code}`}
+                      alt={result.coa.title}
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                  </div>
+                )}
+                <div className="qr-code">
                   <img
-                    src={`${API_URL}/api/image/${result.coa.code}`}
-                    alt={result.coa.title}
-                    onError={(e) => e.target.style.display = 'none'}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + '/AUTHENTICATE/' + result.coa.code)}`}
+                    alt="QR Code"
                   />
+                  <span className="qr-label">Scan to Verify</span>
                 </div>
-              )}
+              </div>
 
               <div className="coa-details">
                 <div className="detail-row highlight">
@@ -273,6 +281,7 @@ function App() {
               )}
 
               <div className="coa-footer">
+                <img src="/logo.svg" alt="Gauntlet Gallery" className="coa-logo" />
                 <p>Verified on {new Date(result.verifiedAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
