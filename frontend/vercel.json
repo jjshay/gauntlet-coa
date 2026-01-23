@@ -1,7 +1,8 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    { "source": "/AUTHENTICATE/:path*", "destination": "/" },
-    { "source": "/verify/:path*", "destination": "/" }
+    { "source": "/((?!.*\\.).*)$", "destination": "/" }
   ],
   "headers": [
     {
