@@ -11,6 +11,13 @@ function App() {
   const scannerRef = useRef(null)
   const html5QrCodeRef = useRef(null)
 
+  // Reinitialize ScoreDetect widget when result is shown
+  useEffect(() => {
+    if (result && window.SDWidgets) {
+      window.SDWidgets.init()
+    }
+  }, [result])
+
   // Check URL for code parameter (supports ?code=X and /AUTHENTICATE/X and /verify/X)
   useEffect(() => {
     // Check query parameter first
@@ -298,7 +305,7 @@ function App() {
                       rel="noopener noreferrer"
                       className="blockchain-link"
                     >
-                      View on Blockchain →
+                      View NFT on Polygon →
                     </a>
                   ) : (
                     <span className="blockchain-pending">Blockchain verification pending</span>
@@ -312,6 +319,10 @@ function App() {
                   />
                   <span className="qr-code-label">{result.coa.code}</span>
                 </div>
+              </div>
+
+              <div className="scoredetect-section">
+                <div className="sdcom-timestamps" data-id="b0066589-8263-4ece-92d4-321b51778412"></div>
               </div>
             </div>
 

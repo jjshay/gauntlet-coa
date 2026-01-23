@@ -428,6 +428,19 @@ main {
   font-style: italic;
 }
 
+.scoredetect-section {
+  padding: 1rem 2rem;
+  background: var(--primary);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scoredetect-section .sdcom-timestamps {
+  max-width: 100%;
+}
+
 .coa-footer-right {
   flex: 0 0 auto;
   display: flex;
