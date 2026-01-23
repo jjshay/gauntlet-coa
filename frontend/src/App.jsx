@@ -181,7 +181,6 @@ function App() {
           <div className="result-section">
             <div className="coa-card">
               <div className="coa-header">
-                <img src="/logo.png" alt="Gauntlet Gallery" className="coa-header-logo" />
                 <h2>Certificate of Authenticity</h2>
                 <div className={`verification-badge ${result.blockchain?.verified ? 'verified' : 'pending'}`}>
                   {result.blockchain?.verified ? (
@@ -202,24 +201,15 @@ function App() {
                 </div>
               </div>
 
-              <div className="coa-images">
-                {result.coa.imageUrl && (
-                  <div className="artwork-image">
-                    <img
-                      src={`${API_URL}/api/image/${result.coa.code}`}
-                      alt={result.coa.title}
-                      onError={(e) => e.target.style.display = 'none'}
-                    />
-                  </div>
-                )}
-                <div className="qr-code">
+              {result.coa.imageUrl && (
+                <div className="coa-artwork">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + '/AUTHENTICATE/' + result.coa.code)}`}
-                    alt="QR Code"
+                    src={`${API_URL}/api/image/${result.coa.code}`}
+                    alt={result.coa.title}
+                    onError={(e) => e.target.style.display = 'none'}
                   />
-                  <span className="qr-label">{result.coa.code}</span>
                 </div>
-              </div>
+              )}
 
               <div className="coa-details">
                 <div className="detail-row highlight">
@@ -322,6 +312,10 @@ function App() {
               </div>
 
               <div className="scoredetect-section">
+                <span className="scoredetect-label">Content Authenticity Verified by</span>
+                <a href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412" target="_blank" rel="noopener noreferrer" className="scoredetect-link">
+                  <img src="https://www.scoredetect.com/images/logo.svg" alt="ScoreDetect" className="scoredetect-logo" />
+                </a>
                 <div className="sdcom-timestamps" data-id="b0066589-8263-4ece-92d4-321b51778412"></div>
               </div>
             </div>
