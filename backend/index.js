@@ -89,7 +89,7 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0xD55496144F8CD6904665
  * Polygon RPC endpoint for blockchain queries
  * Using public Polygon RPC for mainnet
  */
-const POLYGON_RPC = process.env.POLYGON_RPC || 'https://polygon-rpc.com';
+const POLYGON_RPC = process.env.POLYGON_RPC || 'https://rpc.ankr.com/polygon';
 
 // ============================================================================
 // SMART CONTRACT INTERFACE
