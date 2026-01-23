@@ -182,23 +182,6 @@ function App() {
             <div className="coa-card">
               <div className="coa-header">
                 <h2>Certificate of Authenticity</h2>
-                <div className={`verification-badge ${result.blockchain?.verified ? 'verified' : 'pending'}`}>
-                  {result.blockchain?.verified ? (
-                    <>
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                        <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/>
-                      </svg>
-                      Blockchain Verified
-                    </>
-                  ) : (
-                    <>
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                      </svg>
-                      Authenticated
-                    </>
-                  )}
-                </div>
               </div>
 
               {result.coa.imageUrl && (
@@ -307,6 +290,23 @@ function App() {
                   <img src="/logo.png" alt="Gauntlet Gallery" className="coa-footer-logo" />
                 </div>
                 <div className="coa-footer-center">
+                  <div className={`verification-badge ${result.blockchain?.verified ? 'verified' : 'pending'}`}>
+                    {result.blockchain?.verified ? (
+                      <>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/>
+                        </svg>
+                        Blockchain Verified
+                      </>
+                    ) : (
+                      <>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        Authenticated
+                      </>
+                    )}
+                  </div>
                   <p>Verified on {new Date(result.verifiedAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
