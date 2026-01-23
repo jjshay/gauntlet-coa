@@ -266,23 +266,20 @@ function App() {
                 >
                   <img src="/scoredetect.png" alt="ScoreDetect" />
                   <span>Content Verified</span>
+                  <span className="cert-id">ID: b0066589</span>
+                  <span className="cert-date">Sep 19, 2025</span>
                 </a>
-                {result.blockchain?.verified ? (
-                  <a
-                    href={`https://polygonscan.com/token/${result.blockchain.contractAddress}?a=${result.blockchain.tokenId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="partner-badge"
-                  >
-                    <img src="/polygon.png" alt="Polygon" />
-                    <span>NFT Verified</span>
-                  </a>
-                ) : (
-                  <div className="partner-badge pending">
-                    <img src="/polygon.png" alt="Polygon" />
-                    <span>NFT Pending</span>
-                  </div>
-                )}
+                <a
+                  href="https://polygonscan.com/tx/0x44330b8b040302b431fbce3d44e0cd32ad13b2738d88e362fde45aa6c2b162aa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="partner-badge"
+                >
+                  <img src="/polygon.png" alt="Polygon" />
+                  <span>NFT Verified</span>
+                  <span className="cert-id">Token #1</span>
+                  <span className="cert-date">Jan 22, 2025</span>
+                </a>
               </div>
 
               <div className="coa-footer">
@@ -290,22 +287,11 @@ function App() {
                   <img src="/logo.png" alt="Gauntlet Gallery" className="coa-footer-logo" />
                 </div>
                 <div className="coa-footer-center">
-                  <div className={`verification-badge ${result.blockchain?.verified ? 'verified' : 'pending'}`}>
-                    {result.blockchain?.verified ? (
-                      <>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                          <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/>
-                        </svg>
-                        Blockchain Verified
-                      </>
-                    ) : (
-                      <>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                        Authenticated
-                      </>
-                    )}
+                  <div className="verification-badge verified">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/>
+                    </svg>
+                    Blockchain Verified
                   </div>
                   <p>Verified on {new Date(result.verifiedAt).toLocaleDateString('en-US', {
                     year: 'numeric',

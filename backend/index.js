@@ -459,6 +459,72 @@ app.get('/api/image/:coaCode', async (req, res) => {
   }
 });
 
+/**
+ * NFT Metadata Endpoint (OpenSea Compatible)
+ * GET /api/nft/:coaCode
+ *
+ * Returns NFT metadata in OpenSea-compatible format for wallets and marketplaces.
+ *
+ * @param {string} coaCode - URL parameter, the COA code
+ *
+ * @returns {Object} OpenSea-compatible metadata:
+ * {
+ *   name: "COA #291045 - Title",
+ *   description: "Certificate of Authenticity...",
+ *   image: "https://...",
+ *   external_url: "https://...",
+ *   attributes: [...]
+ * }
+ */
+app.get('/api/nft/:coaCode', async (req, res) => {
+  try {
+    const { coaCode } = req.params;
+    const normalizedCode = coaCode.toUpperCase();
+
+    // Get COA data from Google Sheets
+    const coaData = await getCOAFromSheet(normalizedCode);
+
+    if (!coaData) {
+      return res.status(404).json({ error: 'COA not found' });
+    }
+
+    // Build image URL
+    let imageUrl = coaData.image_url || '';
+    if (imageUrl.includes('drive.google.com')) {
+      const fileId = imageUrl.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1]
+        || imageUrl.match(/id=([a-zA-Z0-9_-]+)/)?.[1];
+      if (fileId) {
+        imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+      }
+    }
+
+    // Build OpenSea-compatible metadata
+    const metadata = {
+      name: `COA #${normalizedCode} - ${coaData.title || 'Untitled'}`,
+      description: `Certificate of Authenticity for "${coaData.title || 'Untitled'}" by ${coaData.artist || 'Unknown Artist'}. ${coaData.history || coaData.description || ''}`.trim(),
+      image: imageUrl || `https://coa.up.railway.app/api/image/${normalizedCode}`,
+      external_url: `https://frontend-pi-three-98.vercel.app/verify/${normalizedCode}`,
+      attributes: [
+        { trait_type: "Artist", value: coaData.artist || 'Unknown' },
+        { trait_type: "Title", value: coaData.title || 'Untitled' },
+        { trait_type: "Year", value: coaData.date || coaData.year || 'Unknown' },
+        { trait_type: "Dimensions", value: `${coaData.length || '?'}" x ${coaData.width || '?'}"` },
+        { trait_type: "COA Code", value: normalizedCode }
+      ]
+    };
+
+    // Add edition info if available
+    if (coaData.edition) {
+      metadata.attributes.push({ trait_type: "Edition", value: `${coaData.number || '?'} of ${coaData.edition}` });
+    }
+
+    res.json(metadata);
+  } catch (error) {
+    console.error('NFT metadata error:', error);
+    res.status(500).json({ error: 'Failed to fetch NFT metadata' });
+  }
+});
+
 // ============================================================================
 // SERVER STARTUP
 // ============================================================================

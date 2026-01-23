@@ -443,6 +443,15 @@ main {
   letter-spacing: 0.05em;
 }
 
+.partner-badge .cert-id,
+.partner-badge .cert-date {
+  font-size: 0.65rem;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: 'Inter', monospace;
+}
+
 .partner-badge.pending {
   opacity: 0.5;
 }
