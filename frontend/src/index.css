@@ -512,6 +512,20 @@ footer p {
   .coa-header {
     flex-direction: column;
     text-align: center;
+    gap: 0.75rem;
+  }
+
+  .coa-header-logo {
+    height: 35px;
+  }
+
+  .coa-images {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .artwork-image {
+    max-width: 100%;
   }
 
   .detail-row {
@@ -522,5 +536,25 @@ footer p {
   .detail-row .value {
     text-align: left;
     max-width: 100%;
+  }
+
+  .coa-footer {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .coa-footer-left,
+  .coa-footer-center,
+  .coa-footer-right {
+    width: 100%;
+  }
+
+  .coa-footer-logo {
+    height: 50px;
+  }
+
+  .scoredetect-section {
+    padding: 1rem;
   }
 }
