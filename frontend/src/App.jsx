@@ -291,7 +291,18 @@ function App() {
                     month: 'long',
                     day: 'numeric'
                   })}</p>
-                  <p className="powered-by">Powered by Score Direct</p>
+                  {result.blockchain?.verified ? (
+                    <a
+                      href={`https://polygonscan.com/token/${result.blockchain.contractAddress}?a=${result.blockchain.tokenId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="blockchain-link"
+                    >
+                      View on Blockchain →
+                    </a>
+                  ) : (
+                    <span className="blockchain-pending">Blockchain verification pending</span>
+                  )}
                 </div>
                 <div className="coa-footer-right">
                   <img
