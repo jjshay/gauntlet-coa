@@ -288,18 +288,6 @@ function App() {
                     month: 'long',
                     day: 'numeric'
                   })}</p>
-                  {result.blockchain?.verified ? (
-                    <a
-                      href={`https://polygonscan.com/token/${result.blockchain.contractAddress}?a=${result.blockchain.tokenId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="blockchain-link"
-                    >
-                      View NFT on Polygon →
-                    </a>
-                  ) : (
-                    <span className="blockchain-pending">Blockchain verification pending</span>
-                  )}
                 </div>
                 <div className="coa-footer-right">
                   <img
@@ -311,12 +299,32 @@ function App() {
                 </div>
               </div>
 
-              <div className="scoredetect-section">
-                <span className="scoredetect-label">Content Authenticity Verified by</span>
-                <a href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412" target="_blank" rel="noopener noreferrer" className="scoredetect-link">
-                  <img src="https://www.scoredetect.com/images/logo.svg" alt="ScoreDetect" className="scoredetect-logo" />
+              <div className="verification-partners">
+                <a
+                  href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="partner-badge"
+                >
+                  <img src="/scoredetect.png" alt="ScoreDetect" />
+                  <span>Content Verified</span>
                 </a>
-                <div className="sdcom-timestamps" data-id="b0066589-8263-4ece-92d4-321b51778412"></div>
+                {result.blockchain?.verified ? (
+                  <a
+                    href={`https://polygonscan.com/token/${result.blockchain.contractAddress}?a=${result.blockchain.tokenId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="partner-badge"
+                  >
+                    <img src="/polygon.png" alt="Polygon" />
+                    <span>NFT Verified</span>
+                  </a>
+                ) : (
+                  <div className="partner-badge pending">
+                    <img src="/polygon.png" alt="Polygon" />
+                    <span>NFT Pending</span>
+                  </div>
+                )}
               </div>
             </div>
 

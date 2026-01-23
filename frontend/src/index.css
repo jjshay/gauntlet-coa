@@ -408,34 +408,48 @@ main {
   font-style: italic;
 }
 
-.scoredetect-section {
+.verification-partners {
   padding: 1.5rem 2rem;
   background: var(--primary);
   border-top: 1px solid var(--border);
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 0.75rem;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-.scoredetect-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+.partner-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: opacity 0.2s;
 }
 
-.scoredetect-link {
-  display: inline-block;
+.partner-badge:hover {
+  opacity: 0.8;
 }
 
-.scoredetect-logo {
-  height: 24px;
+.partner-badge img {
+  height: 40px;
   width: auto;
-  filter: brightness(0) invert(1);
 }
 
-.scoredetect-section .sdcom-timestamps {
-  max-width: 100%;
+.partner-badge span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.partner-badge.pending {
+  opacity: 0.5;
+}
+
+.partner-badge.pending span {
+  font-style: italic;
 }
 
 .coa-footer-right {
