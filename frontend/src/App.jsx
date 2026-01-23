@@ -121,7 +121,7 @@ function App() {
     <div className="app">
       <header>
         <div className="logo">
-          <img src="/logo.svg" alt="Gauntlet Gallery" className="logo-image" />
+          <img src="/logo.png" alt="Gauntlet Gallery" className="logo-image" />
         </div>
       </header>
 
@@ -281,7 +281,7 @@ function App() {
               )}
 
               <div className="coa-footer">
-                <img src="/logo.svg" alt="Gauntlet Gallery" className="coa-logo" />
+                <img src="/logo.png" alt="Gauntlet Gallery" className="coa-logo" />
                 <p>Verified on {new Date(result.verifiedAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
