@@ -174,6 +174,7 @@ function App() {
           <div className="result-section">
             <div className="coa-card">
               <div className="coa-header">
+                <img src="/logo.png" alt="Gauntlet Gallery" className="coa-header-logo" />
                 <h2>Certificate of Authenticity</h2>
                 <div className={`verification-badge ${result.blockchain?.verified ? 'verified' : 'pending'}`}>
                   {result.blockchain?.verified ? (
@@ -209,7 +210,7 @@ function App() {
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + '/AUTHENTICATE/' + result.coa.code)}`}
                     alt="QR Code"
                   />
-                  <span className="qr-label">Scan to Verify</span>
+                  <span className="qr-label">{result.coa.code}</span>
                 </div>
               </div>
 
@@ -281,15 +282,25 @@ function App() {
               )}
 
               <div className="coa-footer">
-                <img src="/logo.png" alt="Gauntlet Gallery" className="coa-logo" />
-                <p>Verified on {new Date(result.verifiedAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}</p>
-                <p className="powered-by">Powered by Score Direct</p>
+                <div className="coa-footer-left">
+                  <img src="/logo.png" alt="Gauntlet Gallery" className="coa-footer-logo" />
+                </div>
+                <div className="coa-footer-center">
+                  <p>Verified on {new Date(result.verifiedAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}</p>
+                  <p className="powered-by">Powered by Score Direct</p>
+                </div>
+                <div className="coa-footer-right">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + '/AUTHENTICATE/' + result.coa.code)}`}
+                    alt="QR Code"
+                    className="coa-footer-qr"
+                  />
+                  <span className="qr-code-label">{result.coa.code}</span>
+                </div>
               </div>
             </div>
 
