@@ -83,13 +83,13 @@ const SHEET_NAME = process.env.SHEET_NAME || 'COA';
  * Deployed smart contract address on Polygon
  * This is the GauntletCOA ERC-721 contract
  */
-const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1';
 
 /**
  * Polygon RPC endpoint for blockchain queries
- * Using LlamaRPC for reliability and no rate limits
+ * Using public Polygon RPC for mainnet
  */
-const POLYGON_RPC = process.env.POLYGON_RPC || 'https://polygon-amoy.g.alchemy.com/v2/demo';
+const POLYGON_RPC = process.env.POLYGON_RPC || 'https://polygon-rpc.com';
 
 // ============================================================================
 // SMART CONTRACT INTERFACE
