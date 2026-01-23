@@ -409,13 +409,13 @@ main {
 }
 
 .verification-partners {
-  padding: 1.5rem 2rem;
+  padding: 2rem;
   background: var(--primary);
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 2rem;
+  align-items: flex-end;
+  gap: 3rem;
   flex-wrap: wrap;
 }
 
@@ -423,7 +423,8 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: flex-end;
+  gap: 0.75rem;
   text-decoration: none;
   transition: opacity 0.2s;
 }
