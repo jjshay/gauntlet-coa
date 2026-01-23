@@ -212,10 +212,6 @@ function App() {
               )}
 
               <div className="coa-details">
-                <div className="detail-row highlight">
-                  <span className="label">COA Code</span>
-                  <span className="value">{result.coa.code}</span>
-                </div>
                 <div className="detail-row">
                   <span className="label">Artist</span>
                   <span className="value">{result.coa.artist}</span>
