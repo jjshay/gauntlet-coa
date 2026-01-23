@@ -498,12 +498,16 @@ app.get('/api/nft/:coaCode', async (req, res) => {
       }
     }
 
+    // Build COA page screenshot URL for NFT image
+    const coaPageUrl = `https://frontend-pi-three-98.vercel.app/verify/${normalizedCode}`;
+    const screenshotUrl = `https://image.thum.io/get/width/800/crop/1000/noanimate/${coaPageUrl}`;
+
     // Build OpenSea-compatible metadata
     const metadata = {
       name: `COA #${normalizedCode} - ${coaData.title || 'Untitled'}`,
       description: `Certificate of Authenticity for "${coaData.title || 'Untitled'}" by ${coaData.artist || 'Unknown Artist'}. ${coaData.history || coaData.description || ''}`.trim(),
-      image: imageUrl || `https://coa.up.railway.app/api/image/${normalizedCode}`,
-      external_url: `https://frontend-pi-three-98.vercel.app/verify/${normalizedCode}`,
+      image: screenshotUrl,
+      external_url: coaPageUrl,
       attributes: [
         { trait_type: "Artist", value: coaData.artist || 'Unknown' },
         { trait_type: "Title", value: coaData.title || 'Untitled' },
