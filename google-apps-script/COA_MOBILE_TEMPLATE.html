@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .certificate {
+      background: white;
+      border-radius: 16px;
+      max-width: 420px;
+      width: 100%;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    /* === HEADER === */
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+      color: white;
+      text-align: center;
+      padding: 24px 20px;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: 1px;
+      margin-top: 8px;
+    }
+
+    /* === ARTWORK IMAGE === */
+    .artwork {
+      padding: 20px;
+      background: #f8f9fa;
+    }
+
+    .artwork img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    /* === DETAILS SECTION A === */
+    .details-a {
+      padding: 20px;
+      background: white;
+    }
+
+    .detail-primary {
+      text-align: center;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .artist-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    .artwork-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-style: italic;
+      color: #666;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .detail-item {
+      text-align: center;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .detail-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    /* === DETAILS SECTION B === */
+    .details-b {
+      padding: 0 20px 20px;
+      background: white;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-row .label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .detail-row .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .coa-code {
+      font-family: monospace;
+      background: #1a1a2e;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    /* === BLOCKCHAIN VERIFICATION === */
+    .verification {
+      padding: 20px;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      text-align: center;
+    }
+
+    .verification-badges {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      background: white;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #1a1a2e;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .badge svg {
+      width: 14px;
+      height: 14px;
+      margin-right: 6px;
+    }
+
+    .badge.blockchain svg { fill: #7b1fa2; }
+    .badge.nft svg { fill: #1565c0; }
+
+    .verification-text {
+      font-size: 11px;
+      color: #2e7d32;
+      line-height: 1.5;
+    }
+
+    /* === POWERED BY / QR CODE === */
+    .footer {
+      padding: 24px 20px;
+      background: #1a1a2e;
+      text-align: center;
+    }
+
+    .qr-container {
+      display: inline-block;
+      background: white;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .qr-container img {
+      width: 120px;
+      height: 120px;
+    }
+
+    .scan-text {
+      font-size: 11px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 8px;
+    }
+
+    .verify-url {
+      font-size: 12px;
+      color: #d4af37;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .powered-by {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .powered-label {
+      font-size: 9px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    .powered-logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .powered-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .powered-logo svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 360px) {
+      .certificate { margin: 10px; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .verification-badges { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="logo">GAUNTLET GALLERY</div>
+      <h1>Certificate of Authenticity</h1>
+    </div>
+
+    <!-- ARTWORK IMAGE -->
+    <div class="artwork">
+      <img src="{{IMAGE_URL}}" alt="{{TITLE}}" />
+    </div>
+
+    <!-- DETAILS A: Artist & Title + Grid -->
+    <div class="details-a">
+      <div class="detail-primary">
+        <div class="artist-name">{{ARTIST}}</div>
+        <div class="artwork-title">{{TITLE}}</div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Date</div>
+          <div class="detail-value">{{DATE}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Dimensions</div>
+          <div class="detail-value">{{DIMENSIONS}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Edition</div>
+          <div class="detail-value">{{EDITION}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">COA Code</div>
+          <div class="detail-value">{{COA_CODE}}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAILS B: Additional Info -->
+    <div class="details-b">
+      <div class="detail-row">
+        <span class="label">Assigned To</span>
+        <span class="value">{{ASSIGNEE}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Certificate ID</span>
+        <span class="coa-code">{{COA_CODE}}</span>
+      </div>
+    </div>
+
+    <!-- BLOCKCHAIN VERIFICATION -->
+    <div class="verification">
+      <div class="verification-badges">
+        <span class="badge blockchain">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/></svg>
+          Blockchain Verified
+        </span>
+        <span class="badge nft">
+          <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15h14v3H5z"/></svg>
+          NFT Certified
+        </span>
+      </div>
+      <div class="verification-text">
+        This certificate is permanently recorded on the Polygon blockchain<br/>
+        and verified as an authentic NFT collectible.
+      </div>
+    </div>
+
+    <!-- POWERED BY + QR CODE -->
+    <div class="footer">
+      <div class="scan-text">Scan to verify authenticity</div>
+      <div class="qr-container">
+        <img src="{{QR_URL}}" alt="QR Code" />
+      </div>
+      <div class="verify-url">{{SHORT_URL}}</div>
+
+      <div class="powered-by">
+        <div class="powered-label">Powered By</div>
+        <div class="powered-logos">
+          <span class="powered-logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>
+            Polygon
+          </span>
+          <span class="powered-logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            Gauntlet Gallery
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

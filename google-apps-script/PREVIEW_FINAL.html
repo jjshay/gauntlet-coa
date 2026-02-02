@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificate of Authenticity</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;1,400&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Source Sans Pro', sans-serif;
+      background: #e8e8e8;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .certificate {
+      background: #fff;
+      max-width: 500px;
+      margin: 0 auto;
+      border: 3px solid #6b5b95;
+      padding: 25px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #c9a962;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+    }
+
+    /* Artwork */
+    .artwork {
+      margin-bottom: 20px;
+    }
+
+    .artwork img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Details */
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #c9a962;
+      font-size: 14px;
+    }
+
+    .detail-value {
+      color: #333;
+      font-size: 14px;
+      text-align: right;
+    }
+
+    .section-spacer {
+      height: 20px;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+
+    .provenance {
+      font-style: italic;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* Powered by section - all logos on same line */
+    .powered-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .powered-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .all-logos {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .scoredetect-logo img {
+      height: 28px;
+      width: auto;
+    }
+
+    .partner-logo {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .partner-logo:hover {
+      transform: scale(1.1);
+    }
+
+    .partner-logo img {
+      height: 40px;
+      width: auto;
+    }
+
+    .polygon-logo img {
+      filter: invert(35%) sepia(70%) saturate(2000%) hue-rotate(240deg) brightness(90%);
+    }
+
+    .gauntlet-logo img {
+      height: 45px;
+      filter: brightness(0) saturate(100%) invert(70%) sepia(50%) saturate(500%) hue-rotate(10deg) brightness(90%);
+    }
+
+    /* QR Section */
+    .qr-section {
+      text-align: center;
+    }
+
+    .qr-section img {
+      width: 90px;
+      height: 90px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .qr-section:hover img {
+      transform: scale(1.1);
+    }
+
+    .qr-code-label {
+      font-size: 16px;
+      color: #333;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate">
+    <!-- Header -->
+    <div class="header">
+      <h1>Certificate of Authenticity</h1>
+    </div>
+
+    <!-- Artwork image -->
+    <div class="artwork">
+      <img src="https://gauntlet.gallery/images/obey_images/2_Obey_Rose-Soldier_P_image_1.png" alt="Rose Soldier" />
+    </div>
+
+    <!-- Details -->
+    <div class="details">
+      <div class="detail-row">
+        <span class="detail-label">Artist:</span>
+        <span class="detail-value">Shepard Fairey</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Title:</span>
+        <span class="detail-value">Ruth Bader Ginsburg</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Year:</span>
+        <span class="detail-value">2020</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Dimensions:</span>
+        <span class="detail-value">18" x 24"</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Edition:</span>
+        <span class="detail-value">1 of 1000</span>
+      </div>
+
+      <div class="section-spacer"></div>
+
+      <div class="detail-row">
+        <span class="detail-label">Date:</span>
+        <span class="detail-value">January 30, 2025</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Assignor:</span>
+        <span class="detail-value">Gauntlet Gallery</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Assignee:</span>
+        <span class="detail-value">Robert Bruce</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Blockchain:</span>
+        <span class="detail-value">https://bit.ly/blockchain</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">NFT:</span>
+        <span class="detail-value">https://bit.ly/NFT</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p class="provenance">
+        Provenance matters. This certificate is cryptographically secured on the Polygon blockchain and linked to a unique NFT, creating an unalterable chain of custody. <strong>Gauntlet Gallery</strong> has authenticated and guaranteed every piece in our collection since 2012—your confidence is our foundation.
+      </p>
+
+      <!-- Powered by: All three logos on same line -->
+      <div class="powered-row">
+        <span class="powered-label">Powered by:</span>
+        <div class="all-logos">
+          <a href="https://scoredetect.com" target="_blank" class="partner-logo scoredetect-logo" title="ScoreDetect - Digital authenticity verification">
+            <img src="scoredetect.png" alt="ScoreDetect" />
+          </a>
+          <a href="https://polygon.technology" target="_blank" class="partner-logo polygon-logo" title="Polygon - Blockchain network">
+            <img src="polygon.png" alt="Polygon" />
+          </a>
+          <span class="partner-logo gauntlet-logo" title="Gauntlet Gallery - Trusted since 2012">
+            <img src="logo.png" alt="Gauntlet Gallery" />
+          </span>
+        </div>
+      </div>
+
+      <!-- QR Code -->
+      <div class="qr-section" title="Scan to verify authenticity">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://gauntlet-coa-frontend.vercel.app/AUTHENTICATE/0000" alt="QR Code" />
+        <div class="qr-code-label">#0000</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
