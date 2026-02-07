@@ -38,9 +38,9 @@ const CONFIG = {
   DRIVE_FOLDER_NAME: 'Gauntlet COA Certificates',
 
   // Sheet configuration
-  SHEET_NAME: 'COA',
+  SHEET_NAME: 'COA2',
 
-  // Column mapping (0-indexed)
+  // Column mapping (0-indexed) - matches COA2 tab structure
   COLUMNS: {
     COA_CODE: 0,      // A: COA_Code
     QR_CODE: 1,       // B: QR_Code (output - QR image URL)
@@ -51,12 +51,21 @@ const CONFIG = {
     WIDTH: 6,         // G: Width
     NUMBER: 7,        // H: Number (edition number)
     EDITION: 8,       // I: Edition (total)
-    ASSIGNEE: 9,      // J: Assignee
-    IMAGE_URL: 10,    // K: Image_URL
-    SKU: 11,          // L: SKU
-    SHORT_URL: 12,    // M: Short_URL (output - Bit.ly link)
-    CERT_URL: 13,     // N: Cert_URL (output - Google Drive link)
-    GENERATED: 14     // O: Generated (output - timestamp)
+    MEDIUM: 9,        // J: Medium
+    CONDITION: 10,    // K: Condition
+    DESCRIPTION: 11,  // L: Description
+    NOTES: 12,        // M: Notes / Provenance
+    ASSIGNEE: 13,     // N: Assignee
+    IMAGE_URL: 14,    // O: Image_URL
+    SKU: 15,          // P: SKU
+    COA_CODE2: 16,    // Q: COA_Code (duplicate)
+    NFT_TOKEN_ID: 17, // R: NFT_TokenID
+    SHORT_URL: 18,    // S: Short_URL (output - Bit.ly link)
+    BLOCKCHAIN_URL: 19, // T: Blockchain_URL
+    NFT_URL: 20,      // U: NFT_URL
+    CERT_URL: 21,     // V: Cert_URL (output - Google Drive link)
+    DONE: 22,         // W: Done
+    GENERATED: 23     // X: Date (output - timestamp)
   },
 
   // Certificate styling
@@ -122,7 +131,7 @@ function generateAllCertificates() {
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
     const coaCode = row[CONFIG.COLUMNS.COA_CODE];
-    const alreadyGenerated = row[CONFIG.COLUMNS.GENERATED];
+    const alreadyGenerated = row[CONFIG.COLUMNS.DONE] || row[CONFIG.COLUMNS.GENERATED];
 
     // Skip if no COA code or already generated
     if (!coaCode || alreadyGenerated) {
@@ -208,6 +217,10 @@ function processRow(sheet, rowNum, row, folder) {
     width: row[CONFIG.COLUMNS.WIDTH] || '',
     number: row[CONFIG.COLUMNS.NUMBER] || '',
     edition: row[CONFIG.COLUMNS.EDITION] || '',
+    medium: row[CONFIG.COLUMNS.MEDIUM] || '',
+    condition: row[CONFIG.COLUMNS.CONDITION] || '',
+    description: row[CONFIG.COLUMNS.DESCRIPTION] || '',
+    notes: row[CONFIG.COLUMNS.NOTES] || '',
     assignee: row[CONFIG.COLUMNS.ASSIGNEE] || '',
     imageUrl: row[CONFIG.COLUMNS.IMAGE_URL] || '',
     sku: row[CONFIG.COLUMNS.SKU] || '',
@@ -223,6 +236,7 @@ function processRow(sheet, rowNum, row, folder) {
     [CONFIG.COLUMNS.QR_CODE + 1, qrUrl],
     [CONFIG.COLUMNS.SHORT_URL + 1, shortUrl || verifyUrl],
     [CONFIG.COLUMNS.CERT_URL + 1, certFile ? certFile.getUrl() : ''],
+    [CONFIG.COLUMNS.DONE + 1, new Date().toISOString()],
     [CONFIG.COLUMNS.GENERATED + 1, new Date().toISOString()]
   ];
 
@@ -585,6 +599,12 @@ function generateCertificateHTML(data) {
         <span class="value">${escapeHtml(String(data.date))}</span>
       </div>
       ` : ''}
+      ${data.medium ? `
+      <div class="detail-row">
+        <span class="label">Medium</span>
+        <span class="value">${escapeHtml(data.medium)}</span>
+      </div>
+      ` : ''}
       ${dimensions ? `
       <div class="detail-row">
         <span class="label">Dimensions</span>
@@ -595,6 +615,12 @@ function generateCertificateHTML(data) {
       <div class="detail-row">
         <span class="label">Edition</span>
         <span class="value">${edition}</span>
+      </div>
+      ` : ''}
+      ${data.condition ? `
+      <div class="detail-row">
+        <span class="label">Condition</span>
+        <span class="value">${escapeHtml(data.condition)}</span>
       </div>
       ` : ''}
       ${data.assignee ? `
@@ -608,6 +634,20 @@ function generateCertificateHTML(data) {
         <span class="value" style="font-family: monospace;">${escapeHtml(data.coaCode)}</span>
       </div>
     </div>
+
+    ${data.description ? `
+    <div class="details" style="margin-top: 15px;">
+      <div style="font-weight: 600; color: #666; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">Description</div>
+      <div style="font-size: 13px; color: #1a1a2e; line-height: 1.5;">${escapeHtml(data.description)}</div>
+    </div>
+    ` : ''}
+
+    ${data.notes ? `
+    <div class="details" style="margin-top: 15px;">
+      <div style="font-weight: 600; color: #666; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">Provenance</div>
+      <div style="font-size: 13px; color: #1a1a2e; line-height: 1.5; font-style: italic;">${escapeHtml(data.notes)}</div>
+    </div>
+    ` : ''}
 
     <div class="footer">
       <div class="qr-section">
@@ -743,6 +783,10 @@ function testCertificateGeneration() {
     width: '18',
     number: '1',
     edition: '50',
+    medium: 'Screenprint on cream Speckletone paper',
+    condition: 'Excellent',
+    description: 'A vibrant screenprint showcasing bold graphic design.',
+    notes: 'Acquired directly from the artist at gallery opening.',
     assignee: 'Test Collector',
     imageUrl: '',
     sku: 'TST001',
