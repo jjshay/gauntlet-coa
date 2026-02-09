@@ -322,7 +322,7 @@ function App() {
         <h2>About Gauntlet Gallery</h2>
         <p>Founded in San Francisco's Lower Nob Hill in 2012, Gauntlet Gallery became known for curated excellence, monthly exhibitions, and making contemporary art accessible to all. After years as a brick-and-mortar hub for pop and street art, we've evolved into a digital-first gallery serving collectors worldwide.</p>
         <p>Today, we offer art, collectibles, and truly one-of-a-kind items — with a focus on street art, authenticated signed pieces, custom guitars, NASA & space memorabilia, and unique finds you won't see anywhere else.</p>
-        <p>With over 13 years of experience, we've built our business on trust, thoroughly vetting every item we sell and backing each piece with an NFT blockchain-powered Certificate of Authenticity to demonstrate our commitment to authenticity and transparency.</p>
+        <p>With over 13 years of experience, we've built our business on trust, thoroughly vetting every item we sell and backing each piece with an NFT blockchain-powered Certificate of Authenticity to demonstrate our commitment to authentic transparency.</p>
       </section>
 
       <footer>
