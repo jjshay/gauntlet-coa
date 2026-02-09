@@ -321,7 +321,7 @@ function App() {
       <section className="about-section">
         <h2>About Gauntlet Gallery</h2>
         <p>Founded in San Francisco's Lower Nob Hill in 2012, Gauntlet Gallery became known for curated excellence, monthly exhibitions, and making contemporary art accessible to all. After years as a brick-and-mortar hub for pop and street art, we've evolved into a digital-first gallery serving collectors worldwide.</p>
-        <p>Every piece includes a Certificate of Authenticity for trust and transparency. Only 100% authentic items are sold with a lifetime guarantee, which has been our policy since our founding.</p>
+        <p>With over a decade of experience, we treat authenticity as paramount — carefully inspecting all art pieces sold. Every piece includes a Certificate of Authenticity for trust and transparency.</p>
       </section>
 
       <footer>
