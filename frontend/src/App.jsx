@@ -136,7 +136,8 @@ function App() {
         {!result ? (
           <div className="verify-section">
             <h1>Certificate of Authenticity</h1>
-            <p className="subtitle">Verify your artwork's authenticity with blockchain-backed certification</p>
+            <br />
+            <p className="subtitle">Provenance matters. This certificate is cryptographically secured on the Polygon blockchain and linked to a unique NFT, creating an unalterable chain of custody. Gauntlet Gallery has authenticated and guaranteed every piece in our collection since 2012—your confidence is our foundation.</p>
 
             <div className="input-group">
               <input
@@ -316,6 +317,12 @@ function App() {
           </div>
         )}
       </main>
+
+      <section className="about-section">
+        <h2>About Gauntlet Gallery</h2>
+        <p>Founded in San Francisco's Lower Nob Hill in 2012, Gauntlet Gallery became known for curated excellence, monthly exhibitions, and making contemporary art accessible to all. After years as a brick-and-mortar hub for pop and street art, we've evolved into a digital-first gallery serving collectors worldwide.</p>
+        <p>Every piece includes a Certificate of Authenticity for trust and transparency. Only 100% authentic items are sold with a lifetime guarantee, which has been our policy since our founding.</p>
+      </section>
 
       <footer>
         <p>&copy; {new Date().getFullYear()} Gauntlet Gallery. All rights reserved.</p>

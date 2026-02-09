@@ -501,6 +501,29 @@ main {
   border-color: var(--accent);
 }
 
+/* About Section */
+.about-section {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+.about-section h2 {
+  font-size: 1.25rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.about-section p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+
 /* Footer */
 footer {
   padding: 1.5rem;
