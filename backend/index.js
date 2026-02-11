@@ -75,9 +75,9 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 
 /**
  * Name of the tab/sheet within the spreadsheet
- * Default: 'COA'
+ * Default: 'COA2'
  */
-const SHEET_NAME = process.env.SHEET_NAME || 'COA';
+const SHEET_NAME = process.env.SHEET_NAME || 'COA2';
 
 /**
  * Deployed smart contract address on Polygon
@@ -193,7 +193,7 @@ async function getCOAFromSheet(coaCode) {
   // Range format: SheetName!A:K means columns A-K, all rows
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:K`  // Adjust range as needed for more columns
+    range: `${SHEET_NAME}!A:X`  // All columns through Date
   });
 
   const rows = response.data.values;
@@ -358,14 +358,62 @@ app.get('/api/verify/:coaCode', async (req, res) => {
     // Normalize COA code to uppercase for consistent matching
     const normalizedCode = coaCode.toUpperCase();
 
-    // Step 1: Get COA data from Google Sheets
-    const coaData = await getCOAFromSheet(normalizedCode);
+    // Static fallback metadata for known minted tokens (used when Google Sheets is unavailable)
+    const FALLBACK_METADATA = {
+      '291046': {
+        artist: 'Shepard Fairey', title: 'Lenin Record', date: '2005',
+        dimensions: '24" x 18"', edition: '101 of 300', medium: 'Drawing on Heavy Matte Paper',
+        condition: 'Very good', sku: '1_Obey_Lenin-Record_P',
+        description: 'Felt-tip drawing on heavy paper depicting actor James Dean. Preparatory drawing for the Japanese ads series.',
+        provenance: 'Acquired by Executor of Warhol\'s Estate Fredrick Hughes and subsequently sold to the grandfather of the current owner, where upon the passing of said grandfather, the current owner, grandchild inherited the work.'
+      },
+      '291047': {
+        artist: 'Shepard Fairey', title: 'Rose Soldier', date: '2017',
+        dimensions: '13" x 10"', edition: '2 of 450', medium: '',
+        condition: '', sku: '2_Obey_Rose-Soldier_P',
+        description: '', provenance: ''
+      },
+      '291048': {
+        artist: 'Shepard Fairey', title: 'Chinese Soldiers', date: '2006',
+        dimensions: '24" x 18"', edition: '3 of 300', medium: '',
+        condition: '', sku: '3_Obey_Chinese-Soldiers_P',
+        description: '', provenance: ''
+      },
+      'W1': {
+        artist: 'Andy Warhol', title: 'Rebel Without a Cause (James Dean)', date: '1985',
+        dimensions: '', edition: 'Unique', medium: 'Felt-tip drawing on heavy matte paper',
+        condition: 'Very good', sku: 'W1_Warhol_James-Dean_L',
+        description: 'Felt-tip drawing on heavy paper depicting actor James Dean. Preparatory drawing for the Japanese ads series Andy Warhol Rebel Without a Cause (James Dean) from the 1985 Ad Series.',
+        provenance: 'Acquired by Executor of Warhol\'s Estate Fredrick Hughes and subsequently sold to the grandfather of the current owner, where upon the passing of said grandfather, the current owner, grandchild inherited the work.'
+      }
+    };
 
+    // Step 1: Get COA data from Google Sheets (with fallback)
+    let coaData = null;
+    try {
+      coaData = await getCOAFromSheet(normalizedCode);
+    } catch (sheetErr) {
+      console.error('Google Sheets error, using fallback:', sheetErr.message);
+    }
+
+    // Use fallback if Sheets failed or returned nothing
     if (!coaData) {
-      return res.status(404).json({
-        error: 'COA not found',
-        code: coaCode
-      });
+      const fallback = FALLBACK_METADATA[normalizedCode];
+      if (!fallback) {
+        return res.status(404).json({ error: 'COA not found', code: coaCode });
+      }
+      coaData = {
+        artist: fallback.artist,
+        title: fallback.title,
+        date: fallback.date,
+        dimensions: fallback.dimensions,
+        edition: fallback.edition,
+        medium: fallback.medium,
+        condition: fallback.condition,
+        description: fallback.description,
+        provenance: fallback.provenance,
+        image_url: `https://gauntlet.gallery/COA/${fallback.sku}_artwork.jpg`
+      };
     }
 
     // Step 2: Verify on blockchain
@@ -373,12 +421,72 @@ app.get('/api/verify/:coaCode', async (req, res) => {
 
     // Step 3: Build and return response
     // Map various possible column names to our standard fields
+    // COA2 headers are: Artist, Title, Date, Length, Width, Number, Edition, Medium, Condition, Description, Notes / Providence, Image_URL
+    const artist = coaData.artist || coaData.Artist || coaData.ARTIST || '';
+    const title = coaData.title || coaData.Title || 'Untitled';
+    const description = coaData.description || coaData.Description || coaData.history || '';
+    const provenance = coaData.provenance || coaData['notes_/_providence'] || coaData['notes_/_providence_'] || coaData['notes_/_provenance'] || '';
+    const medium = coaData.medium || coaData.Medium || '';
+    const condition = coaData.condition || coaData.Condition || '';
+    const length = coaData.length || coaData.Length || '';
+    const width = coaData.width || coaData.Width || '';
+    const dimensions = coaData.dimensions || coaData.Dimensions || (length && width ? `${length}" x ${width}"` : '');
+    const number = coaData.number || coaData.Number || '';
+    const editionSize = coaData.edition || coaData.Edition || '';
+    const edition = coaData.dimensions ? (coaData.edition || '') : (number && editionSize ? `${number} of ${editionSize}` : editionSize);
+    const year = coaData.date || coaData.Date || coaData.year || coaData.Year || '';
+    const imageUrl = coaData.image_url || coaData.Image_URL || coaData.thumbnail || coaData.THUMBNAIL || '';
+    const sku = coaData.sku || coaData.SKU || '';
+
+    // Build image URL - prefer Image_URL from sheet, fallback to hosted artwork
+    let nftImage = imageUrl;
+    if (!nftImage || nftImage.includes('#REF')) {
+      // Try SKU-based hosted image
+      if (sku && !sku.includes('#REF')) {
+        nftImage = `https://gauntlet.gallery/obey_images/${sku}.png`;
+      } else {
+        nftImage = `https://gauntlet.gallery/COA/${normalizedCode}_artwork.jpg`;
+      }
+    }
+
+    // Build rich description from all available COA fields
+    let nftDescription = `Certificate of Authenticity for "${title}" by ${artist}.`;
+    if (year) nftDescription += ` Created in ${year}.`;
+    if (medium) nftDescription += `\n\nMedium: ${medium}`;
+    if (dimensions) nftDescription += `\nDimensions: ${dimensions}`;
+    if (edition) nftDescription += `\nEdition: ${edition}`;
+    if (condition) nftDescription += `\nCondition: ${condition}`;
+    if (description) nftDescription += `\n\n${description}`;
+    if (provenance) nftDescription += `\n\nProvenance: ${provenance}`;
+    nftDescription += `\n\nThis certificate is cryptographically secured on the Polygon blockchain and linked to a unique NFT. Authenticated by Gauntlet Gallery since 2012.`;
+
+    // Build attributes array with all available fields
+    const attributes = [
+      { trait_type: "Artist", value: artist || 'Unknown' },
+      { trait_type: "Title", value: title },
+      { trait_type: "COA Code", value: normalizedCode }
+    ];
+    if (year) attributes.push({ trait_type: "Year", value: year });
+    if (medium) attributes.push({ trait_type: "Medium", value: medium });
+    if (dimensions) attributes.push({ trait_type: "Dimensions", value: dimensions });
+    if (edition) attributes.push({ trait_type: "Edition", value: edition });
+    if (condition) attributes.push({ trait_type: "Condition", value: condition });
+    attributes.push({ trait_type: "Verified By", value: "Gauntlet Gallery" });
+    attributes.push({ trait_type: "Blockchain", value: "Polygon" });
+
     const response = {
+      // === ERC-721 Metadata fields (for OpenSea/NFT marketplaces) ===
+      name: `Gauntlet Gallery COA - ${title}`,
+      description: nftDescription.trim(),
+      image: nftImage,
+      external_url: `https://gauntlet.gallery/COA/${normalizedCode}_COA.pdf`,
+      attributes,
+      // === Legacy fields (for frontend app) ===
       success: true,
       coa: {
         code: normalizedCode,
-        artist: coaData.artist || coaData.ARTIST || '',
-        title: coaData.title || coaData.Title || '',
+        artist,
+        title,
         date: coaData.date || coaData.year || coaData.Year || '',
         dimensions: {
           length: coaData.length || coaData['c:_item_length'] || coaData['c:_art_l'] || '',
@@ -386,8 +494,8 @@ app.get('/api/verify/:coaCode', async (req, res) => {
         },
         edition: coaData.edition || coaData.Edition || '',
         number: coaData.number || coaData.Number || '',
-        history: coaData.history || coaData.description || coaData.Description || '',
-        imageUrl: coaData.image_url || coaData.thumbnail || coaData.THUMBNAIL || ''
+        history: description,
+        imageUrl: imageUrl
       },
       blockchain: blockchainStatus,
       verifiedAt: new Date().toISOString()
