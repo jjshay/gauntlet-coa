@@ -128,7 +128,7 @@ function App() {
     <div className="app">
       <header>
         <div className="logo">
-          <img src="/logo.png" alt="Gauntlet Gallery" className="logo-image" />
+          <img src="/logo.png" alt="TrueCOA" className="logo-image" />
         </div>
       </header>
 
@@ -137,7 +137,7 @@ function App() {
           <div className="verify-section">
             <h1>Certificate of Authenticity</h1>
             <br />
-            <p className="subtitle">Provenance matters. This certificate is cryptographically secured on the Polygon blockchain and linked to a unique NFT, creating an unalterable chain of custody. Gauntlet Gallery has authenticated and guaranteed every piece in our collection since 2012—your confidence is our foundation.</p>
+            <p className="subtitle">Provenance matters. This certificate is cryptographically secured on the Polygon blockchain and linked to a unique NFT, creating an unalterable chain of custody. Transparent Authenticity.</p>
 
             <div className="input-group">
               <input
@@ -196,39 +196,78 @@ function App() {
               )}
 
               <div className="coa-details">
+                {/* Artist and Title always shown */}
                 <div className="detail-row">
-                  <span className="label">Artist</span>
+                  <span className="label">Signer</span>
                   <span className="value">{result.coa.artist}</span>
                 </div>
                 <div className="detail-row">
                   <span className="label">Title</span>
                   <span className="value">{result.coa.title}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="label">Date</span>
-                  <span className="value">{result.coa.date}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Dimensions</span>
-                  <span className="value">
-                    {result.coa.dimensions.length}" x {result.coa.dimensions.width}"
-                  </span>
-                </div>
+                {/* All other fields: only shown when populated */}
+                {result.coa.date && (
+                  <div className="detail-row">
+                    <span className="label">Date</span>
+                    <span className="value">{result.coa.date}</span>
+                  </div>
+                )}
+                {result.coa.medium && (
+                  <div className="detail-row">
+                    <span className="label">Medium</span>
+                    <span className="value">{result.coa.medium}</span>
+                  </div>
+                )}
+                {result.coa.size && (
+                  <div className="detail-row">
+                    <span className="label">Size</span>
+                    <span className="value">{result.coa.size}</span>
+                  </div>
+                )}
                 {result.coa.edition && (
                   <div className="detail-row">
                     <span className="label">Edition</span>
-                    <span className="value">
-                      {result.coa.number} of {result.coa.edition}
-                    </span>
+                    <span className="value">{result.coa.edition}</span>
                   </div>
                 )}
-                {result.coa.history && (
+                {result.coa.condition && (
+                  <div className="detail-row">
+                    <span className="label">Condition</span>
+                    <span className="value">{result.coa.condition}</span>
+                  </div>
+                )}
+                {result.coa.description && (
+                  <div className="detail-row">
+                    <span className="label">Description</span>
+                    <span className="value">{result.coa.description}</span>
+                  </div>
+                )}
+                {result.coa.provenance && (
                   <div className="detail-row">
                     <span className="label">Provenance</span>
-                    <span className="value">{result.coa.history}</span>
+                    <span className="value">{result.coa.provenance}</span>
                   </div>
                 )}
               </div>
+
+              {/* Assignor - shown when populated */}
+              {result.coa.assignor && (
+                <div className="third-party-auth">
+                  <h3>Authentication</h3>
+                  <div className="auth-details">
+                    <div className="detail-row">
+                      <span className="label">Assignor</span>
+                      <span className="value">{result.coa.assignor}</span>
+                    </div>
+                    {result.coa.authNotes && (
+                      <div className="detail-row">
+                        <span className="label">Notes</span>
+                        <span className="value">{result.coa.authNotes}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {result.blockchain?.verified && (
                 <div className="blockchain-info">
@@ -285,7 +324,7 @@ function App() {
 
               <div className="coa-footer">
                 <div className="coa-footer-left">
-                  <img src="/logo.png" alt="Gauntlet Gallery" className="coa-footer-logo" />
+                  <img src="/logo.png" alt="TrueCOA" className="coa-footer-logo" />
                 </div>
                 <div className="coa-footer-center">
                   <div className="verification-badge verified">
@@ -319,14 +358,13 @@ function App() {
       </main>
 
       <section className="about-section">
-        <h2>About Gauntlet Gallery</h2>
-        <p>Founded in San Francisco's Lower Nob Hill in 2012, Gauntlet Gallery became known for curated excellence, monthly exhibitions, and making contemporary art accessible to all. After years as a brick-and-mortar hub for pop and street art, we've evolved into a digital-first gallery serving collectors worldwide.</p>
-        <p>Today, we offer art, collectibles, and truly one-of-a-kind items — with a focus on street art, authenticated signed pieces, custom guitars, NASA & space memorabilia, and unique finds you won't see anywhere else.</p>
-        <p>With over 13 years of experience, we've built our business on trust, thoroughly vetting every item we sell and backing each piece with an NFT blockchain-powered Certificate of Authenticity to demonstrate our commitment to authentic transparency.</p>
+        <h2>About TrueCOA</h2>
+        <p>TrueCOA provides blockchain-verified Certificates of Authenticity for art, collectibles, and unique items. Every certificate is cryptographically secured on the Polygon blockchain and linked to a unique NFT, creating an unalterable chain of custody.</p>
+        <p>Transparent Authenticity — that's our promise.</p>
       </section>
 
       <footer>
-        <p>&copy; {new Date().getFullYear()} Gauntlet Gallery. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} TrueCOA. All rights reserved.</p>
       </footer>
     </div>
   )

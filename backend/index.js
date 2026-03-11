@@ -75,9 +75,9 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 
 /**
  * Name of the tab/sheet within the spreadsheet
- * Default: 'COA2'
+ * Default: 'COA'
  */
-const SHEET_NAME = process.env.SHEET_NAME || 'COA2';
+const SHEET_NAME = process.env.SHEET_NAME || 'COA';
 
 /**
  * Deployed smart contract address on Polygon
@@ -89,7 +89,7 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0xD55496144F8CD6904665
  * Polygon RPC endpoint for blockchain queries
  * Using public Polygon RPC for mainnet
  */
-const POLYGON_RPC = process.env.POLYGON_RPC || 'https://rpc.ankr.com/polygon';
+const POLYGON_RPC = process.env.POLYGON_RPC || 'https://1rpc.io/matic';
 
 // ============================================================================
 // SMART CONTRACT INTERFACE
@@ -193,7 +193,7 @@ async function getCOAFromSheet(coaCode) {
   // Range format: SheetName!A:K means columns A-K, all rows
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:X`  // All columns through Date
+    range: `${SHEET_NAME}!A:AZ`  // All columns including any new additions
   });
 
   const rows = response.data.values;
@@ -203,7 +203,14 @@ async function getCOAFromSheet(coaCode) {
 
   // First row contains headers - normalize to lowercase with underscores
   // Example: "COA Code" becomes "coa_code"
-  const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_'));
+  // Handle duplicate column names by appending _2, _3, etc.
+  const rawHeaders = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_'));
+  const headerCount = {};
+  const headers = rawHeaders.map(h => {
+    headerCount[h] = (headerCount[h] || 0) + 1;
+    return headerCount[h] > 1 ? `${h}_${headerCount[h]}` : h;
+  });
+  console.log('Sheet headers (deduplicated):', headers);
 
   // Find the index of the coa_code column
   const coaCodeIndex = headers.indexOf('coa_code');
@@ -273,11 +280,17 @@ async function verifyNFT(coaCode) {
     // COA is minted - fetch additional details
     const tokenId = await contract.getTokenIdByCoaCode(coaCode);
     const owner = await contract.getCoaOwner(coaCode);
-    const tokenURI = await contract.tokenURI(tokenId);
+    let tokenURI = '';
+    try {
+      tokenURI = await contract.tokenURI(tokenId);
+    } catch (e) {
+      // tokenURI may not be set - that's OK
+      console.log('tokenURI not available for token', tokenId.toString());
+    }
 
     return {
       verified: true,
-      tokenId: tokenId.toString(),  // Convert BigInt to string for JSON
+      tokenId: tokenId.toString(),
       owner,
       tokenURI,
       contractAddress: CONTRACT_ADDRESS,
@@ -306,13 +319,14 @@ async function verifyNFT(coaCode) {
  * @returns {Object} { status: "ok", timestamp: "ISO date string" }
  */
 app.get('/health', (req, res) => {
-  let parseError = null;
   let clientEmail = null;
   try {
-    const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}');
+    let raw = process.env.GOOGLE_CREDENTIALS || '{}';
+    if (!raw.trim().startsWith('{')) raw = Buffer.from(raw, 'base64').toString('utf8');
+    const creds = JSON.parse(raw);
     clientEmail = creds.client_email || 'not found';
   } catch (e) {
-    parseError = e.message;
+    clientEmail = 'parse error: ' + e.message;
   }
 
   res.json({
@@ -320,8 +334,6 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     sheetsReady: !!sheets,
     credentialsSet: !!process.env.GOOGLE_CREDENTIALS,
-    credentialsLength: process.env.GOOGLE_CREDENTIALS?.length || 0,
-    parseError: parseError,
     clientEmail: clientEmail
   });
 });
@@ -403,16 +415,16 @@ app.get('/api/verify/:coaCode', async (req, res) => {
         return res.status(404).json({ error: 'COA not found', code: coaCode });
       }
       coaData = {
-        artist: fallback.artist,
+        signer: fallback.artist,
         title: fallback.title,
         date: fallback.date,
-        dimensions: fallback.dimensions,
+        size: fallback.dimensions,
         edition: fallback.edition,
         medium: fallback.medium,
         condition: fallback.condition,
         description: fallback.description,
-        provenance: fallback.provenance,
-        image_url: `https://gauntlet.gallery/COA/${fallback.sku}_artwork.jpg`
+        providence: fallback.provenance,
+        image_url: ''
       };
     }
 
@@ -420,66 +432,64 @@ app.get('/api/verify/:coaCode', async (req, res) => {
     const blockchainStatus = await verifyNFT(normalizedCode);
 
     // Step 3: Build and return response
-    // Map various possible column names to our standard fields
-    // COA2 headers are: Artist, Title, Date, Length, Width, Number, Edition, Medium, Condition, Description, Notes / Providence, Image_URL
-    const artist = coaData.artist || coaData.Artist || coaData.ARTIST || '';
+    // Map column names to standard fields
+    // COA sheet headers (normalized):
+    // coa_code, qr_code, signer, title, date, medium, edition, size, condition,
+    // description, providence, assignor, assignee, third_party_authentication_notes,
+    // sku, image_url, nft_tokenid, short_url, blockchain_url, nft_url, cert_url,
+    // status, completion_date
+    const artist = coaData.signer || coaData.artist || coaData.Artist || '';
     const title = coaData.title || coaData.Title || 'Untitled';
-    const description = coaData.description || coaData.Description || coaData.history || '';
-    const provenance = coaData.provenance || coaData['notes_/_providence'] || coaData['notes_/_providence_'] || coaData['notes_/_provenance'] || '';
+    const description = coaData.description || coaData.Description || '';
+    const provenance = coaData.providence || coaData.provenance || coaData['notes_/_providence'] || '';
     const medium = coaData.medium || coaData.Medium || '';
     const condition = coaData.condition || coaData.Condition || '';
-    const length = coaData.length || coaData.Length || '';
-    const width = coaData.width || coaData.Width || '';
-    const dimensions = coaData.dimensions || coaData.Dimensions || (length && width ? `${length}" x ${width}"` : '');
-    const number = coaData.number || coaData.Number || '';
-    const editionSize = coaData.edition || coaData.Edition || '';
-    const edition = coaData.dimensions ? (coaData.edition || '') : (number && editionSize ? `${number} of ${editionSize}` : editionSize);
-    const year = coaData.date || coaData.Date || coaData.year || coaData.Year || '';
-    const imageUrl = coaData.image_url || coaData.Image_URL || coaData.thumbnail || coaData.THUMBNAIL || '';
+    const size = coaData.size || '';
+    const edition = coaData.edition || coaData.Edition || '';
+    const year = coaData.date || coaData.Date || coaData.year || '';
+    const imageUrl = coaData.image_url || coaData.Image_URL || '';
     const sku = coaData.sku || coaData.SKU || '';
+    const assignor = coaData.assignor || coaData.authenticator || '';
+    const authNotes = coaData.third_party_authentication_notes || '';
 
-    // Build image URL - prefer Image_URL from sheet, fallback to hosted artwork
+    // Build image URL - prefer Image_URL from sheet
     let nftImage = imageUrl;
     if (!nftImage || nftImage.includes('#REF')) {
-      // Try SKU-based hosted image
-      if (sku && !sku.includes('#REF')) {
-        nftImage = `https://gauntlet.gallery/obey_images/${sku}.png`;
-      } else {
-        nftImage = `https://gauntlet.gallery/COA/${normalizedCode}_artwork.jpg`;
-      }
+      nftImage = '';
     }
 
     // Build rich description from all available COA fields
     let nftDescription = `Certificate of Authenticity for "${title}" by ${artist}.`;
     if (year) nftDescription += ` Created in ${year}.`;
     if (medium) nftDescription += `\n\nMedium: ${medium}`;
-    if (dimensions) nftDescription += `\nDimensions: ${dimensions}`;
+    if (size) nftDescription += `\nSize: ${size}`;
     if (edition) nftDescription += `\nEdition: ${edition}`;
     if (condition) nftDescription += `\nCondition: ${condition}`;
     if (description) nftDescription += `\n\n${description}`;
     if (provenance) nftDescription += `\n\nProvenance: ${provenance}`;
-    nftDescription += `\n\nThis certificate is cryptographically secured on the Polygon blockchain and linked to a unique NFT. Authenticated by Gauntlet Gallery since 2012.`;
+    nftDescription += `\n\nThis certificate is cryptographically secured on the Polygon blockchain and linked to a unique NFT. Verified by TrueCOA.`;
 
     // Build attributes array with all available fields
     const attributes = [
-      { trait_type: "Artist", value: artist || 'Unknown' },
+      { trait_type: "Signer", value: artist || 'Unknown' },
       { trait_type: "Title", value: title },
       { trait_type: "COA Code", value: normalizedCode }
     ];
     if (year) attributes.push({ trait_type: "Year", value: year });
     if (medium) attributes.push({ trait_type: "Medium", value: medium });
-    if (dimensions) attributes.push({ trait_type: "Dimensions", value: dimensions });
+    if (size) attributes.push({ trait_type: "Size", value: size });
     if (edition) attributes.push({ trait_type: "Edition", value: edition });
     if (condition) attributes.push({ trait_type: "Condition", value: condition });
-    attributes.push({ trait_type: "Verified By", value: "Gauntlet Gallery" });
+    if (assignor) attributes.push({ trait_type: "Assignor", value: assignor });
+    attributes.push({ trait_type: "Verified By", value: "TrueCOA" });
     attributes.push({ trait_type: "Blockchain", value: "Polygon" });
 
     const response = {
       // === ERC-721 Metadata fields (for OpenSea/NFT marketplaces) ===
-      name: `Gauntlet Gallery COA - ${title}`,
+      name: `TrueCOA - ${title}`,
       description: nftDescription.trim(),
       image: nftImage,
-      external_url: `https://gauntlet.gallery/COA/${normalizedCode}_COA.pdf`,
+      external_url: `https://truecoa.com/AUTHENTICATE/${normalizedCode}`,
       attributes,
       // === Legacy fields (for frontend app) ===
       success: true,
@@ -487,14 +497,15 @@ app.get('/api/verify/:coaCode', async (req, res) => {
         code: normalizedCode,
         artist,
         title,
-        date: coaData.date || coaData.year || coaData.Year || '',
-        dimensions: {
-          length: coaData.length || coaData['c:_item_length'] || coaData['c:_art_l'] || '',
-          width: coaData.width || coaData['c:_item_width'] || coaData['c:_art_w'] || ''
-        },
-        edition: coaData.edition || coaData.Edition || '',
-        number: coaData.number || coaData.Number || '',
-        history: description,
+        date: year,
+        size,
+        edition,
+        medium,
+        condition,
+        description,
+        provenance,
+        assignor,
+        authNotes,
         imageUrl: imageUrl
       },
       blockchain: blockchainStatus,
@@ -608,22 +619,22 @@ app.get('/api/nft/:coaCode', async (req, res) => {
 
     // Build OpenSea-compatible metadata
     const metadata = {
-      name: `COA #${normalizedCode} - ${coaData.title || 'Untitled'}`,
-      description: `Certificate of Authenticity for "${coaData.title || 'Untitled'}" by ${coaData.artist || 'Unknown Artist'}. Verified on Polygon blockchain. ${coaData.history || coaData.description || ''}`.trim(),
+      name: `TrueCOA #${normalizedCode} - ${coaData.title || 'Untitled'}`,
+      description: `Certificate of Authenticity for "${coaData.title || 'Untitled'}" by ${coaData.signer || coaData.artist || 'Unknown'}. Verified on Polygon blockchain. ${coaData.description || ''}`.trim(),
       image: imageUrl || `https://coa.up.railway.app/api/image/${normalizedCode}`,
-      external_url: `https://frontend-pi-three-98.vercel.app/verify/${normalizedCode}`,
+      external_url: `https://truecoa.com/AUTHENTICATE/${normalizedCode}`,
       attributes: [
-        { trait_type: "Artist", value: coaData.artist || 'Unknown' },
+        { trait_type: "Signer", value: coaData.signer || coaData.artist || 'Unknown' },
         { trait_type: "Title", value: coaData.title || 'Untitled' },
-        { trait_type: "Year", value: coaData.date || coaData.year || 'Unknown' },
-        { trait_type: "Dimensions", value: `${coaData.length || '?'}" x ${coaData.width || '?'}"` },
+        { trait_type: "Year", value: coaData.date || 'Unknown' },
+        { trait_type: "Size", value: coaData.size || '' },
         { trait_type: "COA Code", value: normalizedCode }
       ]
     };
 
     // Add edition info if available
     if (coaData.edition) {
-      metadata.attributes.push({ trait_type: "Edition", value: `${coaData.number || '?'} of ${coaData.edition}` });
+      metadata.attributes.push({ trait_type: "Edition", value: coaData.edition });
     }
 
     res.json(metadata);
@@ -655,7 +666,7 @@ initGoogleSheets()
   .then(() => {
     // Start server, binding to 0.0.0.0 for container environments
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Gauntlet COA API running on port ${PORT}`);
+      console.log(`TrueCOA API running on port ${PORT}`);
     });
   })
   .catch(err => {
@@ -664,6 +675,6 @@ initGoogleSheets()
     console.error('Warning:', err.message);
 
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Gauntlet COA API running on port ${PORT} (without Google Sheets)`);
+      console.log(`TrueCOA API running on port ${PORT} (without Google Sheets)`);
     });
   });
