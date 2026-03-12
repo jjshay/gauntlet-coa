@@ -203,282 +203,210 @@ main {
   font-size: 0.875rem;
 }
 
-/* Result Section */
+/* Result Section — Landscape Certificate */
 .result-section {
-  max-width: 600px;
+  max-width: 1100px;
   width: 100%;
 }
 
-.coa-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.coa-header {
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, var(--secondary), var(--primary));
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.coa-header-logo {
-  height: 40px;
-  width: auto;
-}
-
-.coa-header h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-align: center;
-}
-
-.verification-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.verification-badge.verified {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4caf50;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-.verification-badge.pending {
-  background: rgba(201, 169, 98, 0.2);
-  color: var(--accent);
-  border: 1px solid rgba(201, 169, 98, 0.3);
-}
-
-.coa-artwork {
-  padding: 1.5rem;
-  background: var(--secondary);
-  display: flex;
-  justify-content: center;
-}
-
-.coa-artwork img {
-  max-width: 100%;
-  max-height: 400px;
-  object-fit: contain;
+.coa-certificate {
+  position: relative;
+  background: #f5f5fa;
   border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 11 / 8.5;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
-.qr-code img {
-  width: 120px;
-  height: 120px;
+/* Translucent background image */
+.coa-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.qr-label {
-  font-size: 0.7rem;
-  color: #333;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.coa-bg-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.15;
+  filter: grayscale(30%);
 }
 
-.coa-details {
-  padding: 1.5rem 2rem;
-}
-
-.detail-row {
+/* Title bar */
+.cert-title-bar {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
+  padding: 1.5rem 2rem 0.75rem;
 }
 
-.detail-row:last-child {
-  border-bottom: none;
-}
-
-.detail-row.highlight {
-  background: rgba(201, 169, 98, 0.1);
-  margin: -0.75rem -1rem 0.75rem;
-  padding: 1rem;
-  border-radius: 8px;
-  border-bottom: none;
-}
-
-.detail-row .label {
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.detail-row .value {
-  color: var(--text);
-  font-weight: 500;
-  text-align: right;
-  max-width: 60%;
-}
-
-.detail-row .value.address a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.detail-row .value.address a:hover {
-  text-decoration: underline;
-}
-
-.blockchain-info {
-  padding: 1.5rem 2rem;
-  background: rgba(76, 175, 80, 0.05);
-  border-top: 1px solid var(--border);
-}
-
-.blockchain-info h3 {
-  font-size: 0.875rem;
+.cert-title-bar h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
   font-weight: 600;
-  color: #4caf50;
-  margin-bottom: 1rem;
+  color: #0e2e5f;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-.blockchain-details .detail-row {
-  padding: 0.5rem 0;
-}
-
-.coa-footer {
-  padding: 2rem;
-  background: var(--secondary);
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.coa-footer-left {
-  flex: 0 0 auto;
-}
-
-.coa-footer-logo {
-  height: 80px;
-  width: auto;
-}
-
-.coa-footer-center {
-  flex: 1;
-  text-align: center;
-}
-
-.coa-footer-center p {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.blockchain-link {
-  display: inline-block;
-  margin-top: 0.5rem;
-  color: var(--accent);
-  font-weight: 500;
-  font-size: 0.8rem;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.blockchain-link:hover {
-  color: var(--accent-light);
-  text-decoration: underline;
-}
-
-.blockchain-pending {
-  display: inline-block;
-  margin-top: 0.5rem;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-style: italic;
-}
-
-.verification-partners {
-  padding: 1rem 2rem;
-  background: var(--primary);
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2rem;
-}
-
-.partner-badge {
+.cert-qr {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  transition: opacity 0.2s;
+  gap: 0.25rem;
 }
 
-.partner-badge:hover {
-  opacity: 0.8;
-}
-
-.partner-badge img {
-  height: 139px;
-  width: auto;
-}
-
-.partner-badge span {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.partner-badge .cert-id,
-.partner-badge .cert-date {
-  font-size: 0.65rem;
-  color: var(--accent);
-  text-transform: none;
-  letter-spacing: 0;
-  font-family: 'Inter', monospace;
-}
-
-.partner-badge.pending {
-  opacity: 0.5;
-}
-
-.partner-badge.pending span {
-  font-style: italic;
-}
-
-.coa-footer-right {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.coa-footer-qr {
-  width: 45px;
-  height: 45px;
+.cert-qr img {
+  width: 64px;
+  height: 64px;
   border-radius: 4px;
 }
 
-.qr-code-label {
-  font-size: 0.875rem;
+.cert-qr span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #0e2e5f;
+  letter-spacing: 0.05em;
+}
+
+/* Two-column body */
+.cert-body {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.5rem 2rem 0.75rem;
+  min-height: 0;
+}
+
+.cert-left {
+  flex: 0 0 38%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.cert-artwork {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cert-right {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  overflow-y: auto;
+}
+
+.cert-logo {
+  height: 40px;
+  width: auto;
+  align-self: flex-end;
+  margin-bottom: 0.25rem;
+}
+
+/* Section headers */
+.cert-section h3 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #3d6994;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+}
+
+/* Detail rows */
+.cert-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.15rem 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #32323a;
+}
+
+.cert-detail span:first-child {
+  color: #3d6994;
   font-weight: 600;
-  color: var(--accent);
-  letter-spacing: 0.1em;
+  flex-shrink: 0;
+  margin-right: 0.75rem;
+}
+
+.cert-detail span:last-child {
+  text-align: right;
+  color: #32323a;
+}
+
+.cert-detail a {
+  color: #3d6994;
+  text-decoration: none;
+}
+
+.cert-detail a:hover {
+  text-decoration: underline;
+}
+
+/* Description / Provenance text */
+.cert-text {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #32323a;
+}
+
+/* Footer */
+.cert-footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 2rem 0.75rem;
+  border-top: 1px solid rgba(14, 46, 95, 0.1);
+}
+
+.cert-footer-logos {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cert-footer-logos span {
+  font-size: 0.65rem;
+  color: #666;
+  font-style: italic;
+}
+
+.cert-footer-logos img {
+  height: 24px;
+  width: auto;
+  opacity: 0.7;
+}
+
+.cert-footer-text {
+  font-size: 0.65rem;
+  color: #3d6994;
+  text-align: right;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
 .back-btn {
@@ -537,7 +465,37 @@ footer p {
   color: var(--text-muted);
 }
 
+/* Print styles — landscape certificate */
+@media print {
+  body { background: white; }
+  header, .about-section, footer, .back-btn { display: none !important; }
+  main { padding: 0; }
+  .coa-certificate { box-shadow: none; border-radius: 0; }
+}
+
 /* Responsive */
+@media (max-width: 900px) {
+  .coa-certificate {
+    aspect-ratio: auto;
+  }
+
+  .cert-body {
+    flex-direction: column;
+  }
+
+  .cert-left {
+    flex: 0 0 auto;
+  }
+
+  .cert-artwork {
+    max-height: 300px;
+  }
+
+  .cert-title-bar h2 {
+    font-size: 1.4rem;
+  }
+}
+
 @media (max-width: 640px) {
   .verify-section h1 {
     font-size: 1.75rem;
@@ -551,52 +509,22 @@ footer p {
     width: 100%;
   }
 
-  .coa-header {
+  .cert-title-bar {
     flex-direction: column;
-    text-align: center;
     gap: 0.75rem;
   }
 
-  .coa-header-logo {
-    height: 35px;
+  .cert-title-bar h2 {
+    font-size: 1.2rem;
   }
 
-  .coa-images {
+  .cert-footer {
     flex-direction: column;
-    align-items: center;
-  }
-
-  .artwork-image {
-    max-width: 100%;
-  }
-
-  .detail-row {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .detail-row .value {
-    text-align: left;
-    max-width: 100%;
-  }
-
-  .coa-footer {
-    flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.5rem;
     text-align: center;
   }
 
-  .coa-footer-left,
-  .coa-footer-center,
-  .coa-footer-right {
-    width: 100%;
-  }
-
-  .coa-footer-logo {
-    height: 50px;
-  }
-
-  .scoredetect-section {
-    padding: 1rem;
+  .cert-footer-text {
+    text-align: center;
   }
 }

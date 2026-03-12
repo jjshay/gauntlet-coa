@@ -180,186 +180,103 @@ function App() {
           </div>
         ) : (
           <div className="result-section">
-            <div className="coa-card">
-              <div className="coa-header">
-                <h2>Certificate of Authenticity</h2>
-              </div>
-
+            <div className="coa-certificate">
+              {/* Translucent background image */}
               {result.coa.imageUrl && (
-                <div className="coa-artwork">
+                <div className="coa-bg-image">
                   <img
                     src={`${API_URL}/api/image/${result.coa.code}`}
-                    alt={result.coa.title}
-                    onError={(e) => e.target.style.display = 'none'}
+                    alt=""
+                    onError={(e) => e.target.parentElement.style.display = 'none'}
                   />
                 </div>
               )}
 
-              <div className="coa-details">
-                {/* Artist and Title always shown */}
-                <div className="detail-row">
-                  <span className="label">Signer</span>
-                  <span className="value">{result.coa.artist}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Title</span>
-                  <span className="value">{result.coa.title}</span>
-                </div>
-                {/* All other fields: only shown when populated */}
-                {result.coa.date && (
-                  <div className="detail-row">
-                    <span className="label">Date</span>
-                    <span className="value">{result.coa.date}</span>
-                  </div>
-                )}
-                {result.coa.completionDate && (
-                  <div className="detail-row">
-                    <span className="label">Completion Date</span>
-                    <span className="value">{new Date(result.coa.completionDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                  </div>
-                )}
-                {result.coa.medium && (
-                  <div className="detail-row">
-                    <span className="label">Medium</span>
-                    <span className="value">{result.coa.medium}</span>
-                  </div>
-                )}
-                {result.coa.size && (
-                  <div className="detail-row">
-                    <span className="label">Size</span>
-                    <span className="value">{result.coa.size}</span>
-                  </div>
-                )}
-                {result.coa.edition && (
-                  <div className="detail-row">
-                    <span className="label">Edition</span>
-                    <span className="value">{result.coa.edition}</span>
-                  </div>
-                )}
-                {result.coa.condition && (
-                  <div className="detail-row">
-                    <span className="label">Condition</span>
-                    <span className="value">{result.coa.condition}</span>
-                  </div>
-                )}
-                {result.coa.description && (
-                  <div className="detail-row">
-                    <span className="label">Description</span>
-                    <span className="value">{result.coa.description}</span>
-                  </div>
-                )}
-                {result.coa.provenance && (
-                  <div className="detail-row">
-                    <span className="label">Provenance</span>
-                    <span className="value">{result.coa.provenance}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Authentication - shown when assignor or assignee populated */}
-              {(result.coa.assignor || result.coa.assignee) && (
-                <div className="third-party-auth">
-                  <h3>Authentication</h3>
-                  <div className="auth-details">
-                    {result.coa.assignor && (
-                      <div className="detail-row">
-                        <span className="label">Assignor</span>
-                        <span className="value">{result.coa.assignor}</span>
-                      </div>
-                    )}
-                    {result.coa.assignee && (
-                      <div className="detail-row">
-                        <span className="label">Assignee</span>
-                        <span className="value">{result.coa.assignee}</span>
-                      </div>
-                    )}
-                    {result.coa.authNotes && (
-                      <div className="detail-row">
-                        <span className="label">Notes</span>
-                        <span className="value">{result.coa.authNotes}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {result.blockchain?.verified && (
-                <div className="blockchain-info">
-                  <h3>Blockchain Record</h3>
-                  <div className="blockchain-details">
-                    <div className="detail-row">
-                      <span className="label">Token ID</span>
-                      <span className="value">#{result.blockchain.tokenId}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Network</span>
-                      <span className="value">{result.blockchain.network}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Contract</span>
-                      <span className="value address">
-                        <a
-                          href={`https://polygonscan.com/address/${result.blockchain.contractAddress}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {result.blockchain.contractAddress.slice(0, 6)}...{result.blockchain.contractAddress.slice(-4)}
-                        </a>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="verification-partners">
-                <a
-                  href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="partner-badge"
-                >
-                  <img src="/scoredetect.png" alt="ScoreDetect" />
-                  <span>Content Verified</span>
-                  <span className="cert-id">ID: b0066589</span>
-                  <span className="cert-date">Sep 19, 2025</span>
-                </a>
-                <a
-                  href="https://polygonscan.com/tx/0x44330b8b040302b431fbce3d44e0cd32ad13b2738d88e362fde45aa6c2b162aa"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="partner-badge"
-                >
-                  <img src="/polygon.png" alt="Polygon" />
-                  <span>NFT Verified</span>
-                  <span className="cert-id">Token #1</span>
-                  <span className="cert-date">Jan 22, 2025</span>
-                </a>
-              </div>
-
-              <div className="coa-footer">
-                <div className="coa-footer-left">
-                  <img src="/logo.png" alt="TrueCOA" className="coa-footer-logo" />
-                </div>
-                <div className="coa-footer-center">
-                  <div className="verification-badge verified">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                      <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/>
-                    </svg>
-                    Blockchain Verified
-                  </div>
-                  <p>Verified on {new Date(result.verifiedAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}</p>
-                </div>
-                <div className="coa-footer-right">
+              {/* Title bar */}
+              <div className="cert-title-bar">
+                <h2>Certificate of Authenticity</h2>
+                <div className="cert-qr">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + '/AUTHENTICATE/' + result.coa.code)}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(window.location.origin + '/AUTHENTICATE/' + result.coa.code)}`}
                     alt="QR Code"
-                    className="coa-footer-qr"
                   />
-                  <span className="qr-code-label">{result.coa.code}</span>
+                  <span>#{result.coa.code}</span>
+                </div>
+              </div>
+
+              {/* Two-column body */}
+              <div className="cert-body">
+                {/* Left: artwork thumbnail */}
+                <div className="cert-left">
+                  {result.coa.imageUrl && (
+                    <img
+                      src={`${API_URL}/api/image/${result.coa.code}`}
+                      alt={result.coa.title}
+                      className="cert-artwork"
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                  )}
+                </div>
+
+                {/* Right: content card */}
+                <div className="cert-right">
+                  <img src="/logo.png" alt="TrueCOA" className="cert-logo" />
+
+                  <div className="cert-section">
+                    <h3>Details</h3>
+                    <div className="cert-detail"><span>Artist:</span><span>{result.coa.artist}</span></div>
+                    <div className="cert-detail"><span>Title:</span><span>{result.coa.title}</span></div>
+                    {result.coa.date && <div className="cert-detail"><span>Date:</span><span>{result.coa.date}</span></div>}
+                    {result.coa.completionDate && <div className="cert-detail"><span>Completion Date:</span><span>{new Date(result.coa.completionDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>}
+                    {result.coa.medium && <div className="cert-detail"><span>Medium:</span><span>{result.coa.medium}</span></div>}
+                    {result.coa.size && <div className="cert-detail"><span>Dimensions:</span><span>{result.coa.size}</span></div>}
+                    {result.coa.edition && <div className="cert-detail"><span>Edition:</span><span>{result.coa.edition}</span></div>}
+                    {result.coa.condition && <div className="cert-detail"><span>Condition:</span><span>{result.coa.condition}</span></div>}
+                  </div>
+
+                  {result.coa.description && (
+                    <div className="cert-section">
+                      <h3>Description</h3>
+                      <p className="cert-text">{result.coa.description}</p>
+                    </div>
+                  )}
+
+                  {result.coa.provenance && (
+                    <div className="cert-section">
+                      <h3>Provenance</h3>
+                      <p className="cert-text">{result.coa.provenance}</p>
+                    </div>
+                  )}
+
+                  <div className="cert-section">
+                    <h3>Digital Authentication</h3>
+                    {result.blockchain?.verified && (
+                      <div className="cert-detail">
+                        <span>Blockchain:</span>
+                        <span>
+                          <a href={`https://polygonscan.com/address/${result.blockchain.contractAddress}`} target="_blank" rel="noopener noreferrer">
+                            {result.blockchain.network} Token #{result.blockchain.tokenId}
+                          </a>
+                        </span>
+                      </div>
+                    )}
+                    {result.coa.assignor && <div className="cert-detail"><span>Assignor:</span><span>{result.coa.assignor}</span></div>}
+                    {result.coa.assignee && <div className="cert-detail"><span>Assignee:</span><span>{result.coa.assignee}</span></div>}
+                    {result.coa.authNotes && <div className="cert-detail"><span>Notes:</span><span>{result.coa.authNotes}</span></div>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="cert-footer">
+                <div className="cert-footer-logos">
+                  <span>Powered by:</span>
+                  <img src="/logo.png" alt="TrueCOA" />
+                  <img src="/scoredetect.png" alt="ScoreDetect" />
+                  <img src="/polygon.png" alt="Polygon" />
+                </div>
+                <div className="cert-footer-text">
+                  Secured by Polygon blockchain.<br />Transparent Authenticity.
                 </div>
               </div>
             </div>
