@@ -212,6 +212,12 @@ function App() {
                     <span className="value">{result.coa.date}</span>
                   </div>
                 )}
+                {result.coa.completionDate && (
+                  <div className="detail-row">
+                    <span className="label">Completion Date</span>
+                    <span className="value">{result.coa.completionDate}</span>
+                  </div>
+                )}
                 {result.coa.medium && (
                   <div className="detail-row">
                     <span className="label">Medium</span>
@@ -250,15 +256,23 @@ function App() {
                 )}
               </div>
 
-              {/* Assignor - shown when populated */}
-              {result.coa.assignor && (
+              {/* Authentication - shown when assignor or assignee populated */}
+              {(result.coa.assignor || result.coa.assignee) && (
                 <div className="third-party-auth">
                   <h3>Authentication</h3>
                   <div className="auth-details">
-                    <div className="detail-row">
-                      <span className="label">Assignor</span>
-                      <span className="value">{result.coa.assignor}</span>
-                    </div>
+                    {result.coa.assignor && (
+                      <div className="detail-row">
+                        <span className="label">Assignor</span>
+                        <span className="value">{result.coa.assignor}</span>
+                      </div>
+                    )}
+                    {result.coa.assignee && (
+                      <div className="detail-row">
+                        <span className="label">Assignee</span>
+                        <span className="value">{result.coa.assignee}</span>
+                      </div>
+                    )}
                     {result.coa.authNotes && (
                       <div className="detail-row">
                         <span className="label">Notes</span>

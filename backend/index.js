@@ -450,7 +450,9 @@ app.get('/api/verify/:coaCode', async (req, res) => {
     const imageUrl = coaData.image_url || coaData.Image_URL || '';
     const sku = coaData.sku || coaData.SKU || '';
     const assignor = coaData.assignor || coaData.authenticator || '';
+    const assignee = coaData.assignee || '';
     const authNotes = coaData.third_party_authentication_notes || '';
+    const completionDate = coaData.completion_date || '';
 
     // Build image URL - prefer Image_URL from sheet
     let nftImage = imageUrl;
@@ -498,6 +500,7 @@ app.get('/api/verify/:coaCode', async (req, res) => {
         artist,
         title,
         date: year,
+        completionDate,
         size,
         edition,
         medium,
@@ -505,6 +508,7 @@ app.get('/api/verify/:coaCode', async (req, res) => {
         description,
         provenance,
         assignor,
+        assignee,
         authNotes,
         imageUrl: imageUrl
       },
