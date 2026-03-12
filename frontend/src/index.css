@@ -323,7 +323,11 @@ main {
   margin-bottom: 0.25rem;
 }
 
-/* Section headers */
+/* Sections with spacing */
+.cert-section {
+  margin-bottom: 0.75rem;
+}
+
 .cert-section h3 {
   font-size: 0.75rem;
   font-weight: 700;

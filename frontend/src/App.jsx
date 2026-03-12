@@ -250,12 +250,26 @@ function App() {
 
                   <div className="cert-section">
                     <h3>Digital Authentication</h3>
+                    <div className="cert-detail">
+                      <span>Blockchain:</span>
+                      <span>
+                        {result.blockchain?.verified ? (
+                          <a href={`https://polygonscan.com/address/${result.blockchain.contractAddress}`} target="_blank" rel="noopener noreferrer">
+                            polygonscan.com
+                          </a>
+                        ) : (
+                          <a href="https://polygonscan.com/address/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1" target="_blank" rel="noopener noreferrer">
+                            polygonscan.com
+                          </a>
+                        )}
+                      </span>
+                    </div>
                     {result.blockchain?.verified && (
                       <div className="cert-detail">
-                        <span>Blockchain:</span>
+                        <span>NFT:</span>
                         <span>
-                          <a href={`https://polygonscan.com/address/${result.blockchain.contractAddress}`} target="_blank" rel="noopener noreferrer">
-                            {result.blockchain.network} Token #{result.blockchain.tokenId}
+                          <a href={`https://polygonscan.com/token/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1?a=${result.blockchain.tokenId}`} target="_blank" rel="noopener noreferrer">
+                            Token #{result.blockchain.tokenId} on {result.blockchain.network}
                           </a>
                         </span>
                       </div>
