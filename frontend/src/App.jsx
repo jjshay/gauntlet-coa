@@ -215,7 +215,7 @@ function App() {
                 {result.coa.completionDate && (
                   <div className="detail-row">
                     <span className="label">Completion Date</span>
-                    <span className="value">{result.coa.completionDate}</span>
+                    <span className="value">{new Date(result.coa.completionDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                   </div>
                 )}
                 {result.coa.medium && (
