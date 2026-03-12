@@ -31,7 +31,7 @@ function App() {
 
     // Check path-based routes: /AUTHENTICATE/290745 or /verify/290745
     const path = window.location.pathname
-    const authenticateMatch = path.match(/\/(?:AUTHENTICATE|authenticate|verify)\/(\d+)/i)
+    const authenticateMatch = path.match(/\/(?:AUTHENTICATE|authenticate|verify)\/([A-Za-z0-9]+)/i)
     if (authenticateMatch) {
       const code = authenticateMatch[1]
       setCoaCode(code)
