@@ -285,9 +285,18 @@ function App() {
               <div className="cert-footer">
                 <div className="cert-footer-logos">
                   <span>Powered by:</span>
-                  <img src="/logo.png" alt="TrueCOA" />
-                  <img src="/scoredetect.png" alt="ScoreDetect" />
-                  <img src="/polygon.png" alt="Polygon" />
+                  <a href="https://truecoa.com" target="_blank" rel="noopener noreferrer" className="footer-partner">
+                    <img src="/logo.png" alt="TrueCOA" />
+                    <span>TrueCOA</span>
+                  </a>
+                  <a href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412" target="_blank" rel="noopener noreferrer" className="footer-partner">
+                    <img src="/scoredetect.png" alt="ScoreDetect" />
+                    <span>ScoreDetect</span>
+                  </a>
+                  <a href="https://polygonscan.com/address/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1" target="_blank" rel="noopener noreferrer" className="footer-partner">
+                    <img src="/polygon.png" alt="Polygon" />
+                    <span>Polygon</span>
+                  </a>
                 </div>
                 <div className="cert-footer-text">
                   Secured by Polygon blockchain.<br />Transparent Authenticity.
