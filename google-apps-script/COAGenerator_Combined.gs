@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * GAUNTLET GALLERY - COA CERTIFICATE GENERATOR (COMBINED)
+ * TRUECOA - COA CERTIFICATE GENERATOR (COMBINED)
  * ============================================================================
  *
  * Unified Google Apps Script for automated Certificate of Authenticity generation.
@@ -20,7 +20,7 @@
  * 3. Paste this code
  * 4. Run setupTriggers() once to create menu
  *
- * Author: John Shay / Gauntlet Gallery
+ * Author: John Shay / TrueCOA
  * ============================================================================
  */
 
@@ -37,7 +37,7 @@ const CONFIG = {
   VERCEL_FRONTEND_URL: 'https://gauntlet-coa-frontend.vercel.app',
 
   // Google Drive folder for certificates (will be created if not exists)
-  DRIVE_FOLDER_NAME: 'Gauntlet COA Certificates',
+  DRIVE_FOLDER_NAME: 'TrueCOA Certificates',
 
   // Sheet configuration
   SHEET_NAME: 'COA2',
@@ -903,7 +903,7 @@ function generateCertHTML(d) {
         </div>
         <div class="detail-row">
           <span class="detail-label">Assignor:</span>
-          <span class="detail-value">Gauntlet Gallery</span>
+          <span class="detail-value">TrueCOA</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Assignee:</span>
@@ -950,8 +950,8 @@ function generateCertHTML(d) {
               <a href="https://polygon.technology" target="_blank" class="partner-logo" title="Polygon - Blockchain network">
                 <img src="${LOGO_POLYGON_URL}" alt="Polygon" style="height:40px;width:auto;" />
               </a>
-              <span class="partner-logo" title="Gauntlet Gallery - Trusted since 2012">
-                <img src="${LOGO_GAUNTLET_URL}" alt="Gauntlet Gallery" style="height:45px;width:auto;" />
+              <span class="partner-logo" title="TrueCOA - Trusted since 2012">
+                <img src="${LOGO_GAUNTLET_URL}" alt="TrueCOA" style="height:45px;width:auto;" />
               </span>
             </div>
           </div>
@@ -1100,7 +1100,7 @@ function generateMobileHTML(d) {
       ${d.condition ? `<div class="detail-row"><span class="detail-label">Condition:</span><span class="detail-value">${esc(d.condition)}</span></div>` : ''}
       <div class="section-spacer"></div>
       <div class="detail-row"><span class="detail-label">Date:</span><span class="detail-value">${esc(d.transactionDate)}</span></div>
-      <div class="detail-row"><span class="detail-label">Assignor:</span><span class="detail-value">Gauntlet Gallery</span></div>
+      <div class="detail-row"><span class="detail-label">Assignor:</span><span class="detail-value">TrueCOA</span></div>
       <div class="detail-row"><span class="detail-label">Assignee:</span><span class="detail-value">${esc(d.assignee)}</span></div>
       <div class="detail-row"><span class="detail-label">Blockchain:</span><span class="detail-value" style="font-size:11px;">${esc(d.blockchainUrl)}</span></div>
       <div class="detail-row"><span class="detail-label">NFT:</span><span class="detail-value" style="font-size:11px;">${esc(d.nftUrl)}</span></div>
@@ -1126,8 +1126,8 @@ function generateMobileHTML(d) {
         <a href="https://polygon.technology" target="_blank" class="partner-logo" title="Polygon - Blockchain network">
           <img src="${LOGO_POLYGON_URL}" alt="Polygon" style="height:32px;width:auto;" />
         </a>
-        <span class="partner-logo" title="Gauntlet Gallery - Trusted since 2012">
-          <img src="${LOGO_GAUNTLET_URL}" alt="Gauntlet Gallery" style="height:38px;width:auto;" />
+        <span class="partner-logo" title="TrueCOA - Trusted since 2012">
+          <img src="${LOGO_GAUNTLET_URL}" alt="TrueCOA" style="height:38px;width:auto;" />
         </span>
       </div>
       <div class="qr-section">
@@ -1276,7 +1276,7 @@ function generatePDFHTML(d) {
         ${d.condition ? `<div class="detail-row"><span class="detail-label">Condition:</span><span class="detail-value">${esc(d.condition)}</span></div>` : ''}
         <div class="section-spacer"></div>
         <div class="detail-row"><span class="detail-label">Date:</span><span class="detail-value">${esc(d.transactionDate)}</span></div>
-        <div class="detail-row"><span class="detail-label">Assignor:</span><span class="detail-value">Gauntlet Gallery</span></div>
+        <div class="detail-row"><span class="detail-label">Assignor:</span><span class="detail-value">TrueCOA</span></div>
         <div class="detail-row"><span class="detail-label">Assignee:</span><span class="detail-value">${esc(d.assignee)}</span></div>
         <div class="detail-row"><span class="detail-label">Blockchain:</span><span class="detail-value">${esc(d.blockchainUrl)}</span></div>
         <div class="detail-row"><span class="detail-label">NFT:</span><span class="detail-value">${esc(d.nftUrl)}</span></div>
@@ -1304,8 +1304,8 @@ function generatePDFHTML(d) {
           <a href="https://polygon.technology" target="_blank" class="partner-logo" title="Polygon - Blockchain network">
             <img src="${LOGO_POLYGON_URL}" alt="Polygon" style="height:45px;width:auto;" />
           </a>
-          <span class="partner-logo" title="Gauntlet Gallery - Trusted since 2012">
-            <img src="${LOGO_GAUNTLET_URL}" alt="Gauntlet Gallery" style="height:50px;width:auto;" />
+          <span class="partner-logo" title="TrueCOA - Trusted since 2012">
+            <img src="${LOGO_GAUNTLET_URL}" alt="TrueCOA" style="height:50px;width:auto;" />
           </span>
         </div>
       </div>

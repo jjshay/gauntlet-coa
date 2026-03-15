@@ -13,9 +13,9 @@
     <text x="30" y="30" font-family="serif" font-size="16" font-weight="bold" fill="#c9a962" text-anchor="middle">G</text>
   </g>
 
-  <!-- GAUNTLET text -->
-  <text x="70" y="28" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="700" letter-spacing="0.15em" fill="#c9a962">GAUNTLET</text>
+  <!-- TRUECOA text -->
+  <text x="70" y="28" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="700" letter-spacing="0.15em" fill="#c9a962">TRUECOA</text>
 
-  <!-- GALLERY text -->
-  <text x="70" y="45" font-family="'Inter', Arial, sans-serif" font-size="10" font-weight="400" letter-spacing="0.3em" fill="#a0a0a0">GALLERY</text>
+  <!-- Fine Art subtitle -->
+  <text x="70" y="45" font-family="'Inter', Arial, sans-serif" font-size="10" font-weight="400" letter-spacing="0.3em" fill="#a0a0a0">FINE ART</text>
 </svg>

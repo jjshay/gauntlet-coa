@@ -128,7 +128,7 @@ function App() {
     <div className="app">
       <header>
         <div className="logo">
-          <img src="/logo.png" alt="TrueCOA" className="logo-image" />
+          <img src="/logo-white.png" alt="TrueCOA" className="logo-image" />
         </div>
       </header>
 
@@ -274,6 +274,14 @@ function App() {
                         </span>
                       </div>
                     )}
+                    <div className="cert-detail">
+                      <span>ScoreDetect:</span>
+                      <span>
+                        <a href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412" target="_blank" rel="noopener noreferrer">
+                          Verified on SKALE
+                        </a>
+                      </span>
+                    </div>
                     {result.coa.assignor && <div className="cert-detail"><span>Assignor:</span><span>{result.coa.assignor}</span></div>}
                     {result.coa.assignee && <div className="cert-detail"><span>Assignee:</span><span>{result.coa.assignee}</span></div>}
                     {result.coa.authNotes && <div className="cert-detail"><span>Notes:</span><span>{result.coa.authNotes}</span></div>}
@@ -285,10 +293,6 @@ function App() {
               <div className="cert-footer">
                 <div className="cert-footer-logos">
                   <span>Powered by:</span>
-                  <a href="https://truecoa.com" target="_blank" rel="noopener noreferrer" className="footer-partner">
-                    <img src="/logo.png" alt="TrueCOA" />
-                    <span>TrueCOA</span>
-                  </a>
                   <a href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412" target="_blank" rel="noopener noreferrer" className="footer-partner">
                     <img src="/scoredetect.png" alt="ScoreDetect" />
                     <span>ScoreDetect</span>

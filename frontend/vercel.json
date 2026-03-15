@@ -1,5 +1,8 @@
 {
   "rewrites": [
+    { "source": "/AUTHENTICATE/:code", "destination": "/api/og?code=:code" },
+    { "source": "/authenticate/:code", "destination": "/api/og?code=:code" },
+    { "source": "/verify/:code", "destination": "/api/og?code=:code" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -7,7 +7,7 @@ module.exports = {
   solidity: "0.8.20",
   networks: {
     polygon: {
-      url: "https://polygon-rpc.com",
+      url: "https://1rpc.io/matic",
       accounts: [PRIVATE_KEY],
       chainId: 137
     }

@@ -319,7 +319,7 @@ main {
 .cert-logo {
   height: 40px;
   width: auto;
-  align-self: flex-end;
+  align-self: center;
   margin-bottom: 0.25rem;
 }
 

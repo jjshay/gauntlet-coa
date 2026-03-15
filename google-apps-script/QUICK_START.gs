@@ -1,5 +1,5 @@
 /**
- * GAUNTLET GALLERY - COA GENERATOR (QUICK START VERSION)
+ * TRUECOA - COA GENERATOR (QUICK START VERSION)
  *
  * SETUP:
  * 1. Open Google Sheet: https://docs.google.com/spreadsheets/d/16Kya2WQD0tbXTdsug9zSuoP03XmWXsZRTIykbEbBJBU
@@ -18,7 +18,7 @@
 const BITLY_KEY = '485a216ca4141d6f381d6d16bf1ae5ef33a4e49e';
 const VERIFY_URL = 'https://gauntlet-coa-frontend.vercel.app';
 const SHEET_NAME = 'COA';
-const FOLDER_NAME = 'Gauntlet COA Certificates';
+const FOLDER_NAME = 'TrueCOA Certificates';
 
 // Column indices (0-based)
 const COL = {
@@ -146,7 +146,7 @@ function createPDF(d, folder) {
     .sig{border-top:1px solid #1a1a2e;width:200px;margin-top:40px;padding-top:8px;font-size:10px;color:#666;text-align:center}
   </style></head><body>
   <div class="cert">
-    <div class="header"><div class="logo">GAUNTLET GALLERY</div><div class="sub">Fine Art & Collectibles</div></div>
+    <div class="header"><div class="logo">TRUECOA</div><div class="sub">Fine Art & Collectibles</div></div>
     <h1>Certificate of Authenticity</h1>
     ${d.image ? `<div class="img"><img src="${d.image}" alt="${esc(d.title)}"/></div>` : ''}
     <div class="details">

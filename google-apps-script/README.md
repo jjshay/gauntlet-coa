@@ -1,4 +1,4 @@
-# Gauntlet Gallery COA Generator
+# TrueCOA Certificate Generator
 
 Automated Certificate of Authenticity generation for Google Sheets.
 
@@ -29,7 +29,7 @@ Automated Certificate of Authenticity generation for Google Sheets.
 1. Click **Run > Run function > setupTriggers**
 2. Click **Review Permissions**
 3. Select your Google account
-4. Click **Advanced > Go to Gauntlet COA (unsafe)**
+4. Click **Advanced > Go to TrueCOA (unsafe)**
 5. Click **Allow**
 
 ### Step 4: Verify Setup
@@ -90,7 +90,7 @@ Edit these values in the `CONFIG` object at the top of the script:
 const CONFIG = {
   BITLY_API_KEY: 'your-api-key-here',
   VERCEL_FRONTEND_URL: 'https://gauntlet-coa-frontend.vercel.app',
-  DRIVE_FOLDER_NAME: 'Gauntlet COA Certificates',
+  DRIVE_FOLDER_NAME: 'TrueCOA Certificates',
   SHEET_NAME: 'COA'
 };
 ```
@@ -127,4 +127,4 @@ For each certificate, the script creates:
 
 ## Support
 
-For issues or questions, contact Gauntlet Gallery support.
+For issues or questions, contact TrueCOA support.

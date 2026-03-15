@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * GAUNTLET GALLERY COA - BACKEND API SERVER
+ * TRUECOA - BACKEND API SERVER
  * ============================================================================
  *
  * Express.js server that provides the API layer for the Certificate of
@@ -56,7 +56,7 @@ const app = express();
 
 // Enable CORS for all origins
 // TODO: In production, restrict to specific domains:
-// app.use(cors({ origin: ['https://gauntlet.gallery', 'https://gauntlet-coa-frontend.vercel.app'] }));
+// app.use(cors({ origin: ['https://truecoa.com', 'https://gauntlet-coa-frontend.vercel.app'] }));
 app.use(cors());
 
 // Parse JSON request bodies

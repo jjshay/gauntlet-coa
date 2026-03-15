@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * GAUNTLET GALLERY - COA CERTIFICATE GENERATOR
+ * TRUECOA - COA CERTIFICATE GENERATOR
  * ============================================================================
  *
  * Google Apps Script for automated Certificate of Authenticity generation.
@@ -18,7 +18,7 @@
  * 3. Paste this code
  * 4. Run setupTriggers() once to create menu
  *
- * Author: John Shay / Gauntlet Gallery
+ * Author: John Shay / TrueCOA
  * ============================================================================
  */
 
@@ -35,7 +35,7 @@ const CONFIG = {
   VERCEL_FRONTEND_URL: 'https://gauntlet-coa-frontend.vercel.app',
 
   // Google Drive folder for certificates (will be created if not exists)
-  DRIVE_FOLDER_NAME: 'Gauntlet COA Certificates',
+  DRIVE_FOLDER_NAME: 'TrueCOA Certificates',
 
   // Sheet configuration
   SHEET_NAME: 'COA2',
@@ -572,7 +572,7 @@ function generateCertificateHTML(data) {
 <body>
   <div class="certificate">
     <div class="header">
-      <div class="logo">GAUNTLET GALLERY</div>
+      <div class="logo">TRUECOA</div>
       <div class="subtitle">Fine Art & Collectibles</div>
     </div>
 
