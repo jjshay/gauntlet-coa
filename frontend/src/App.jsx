@@ -1,6 +1,47 @@
 import { useState, useEffect, useRef } from 'react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const DEFAULT_CONTRACT_URL = 'https://polygonscan.com/address/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1'
+
+function formatDisplayDate(value) {
+  if (!value) return ''
+
+  const parsed = new Date(value)
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  return value
+}
+
+function buildQrValue(result) {
+  return result.coa.shortUrl || result.external_url || `${window.location.origin}/AUTHENTICATE/${result.coa.code}`
+}
+
+function buildBlockchainLink(result) {
+  if (result.coa.blockchainUrl) return result.coa.blockchainUrl
+  if (result.blockchain?.verified && result.blockchain.tokenId) {
+    return `https://polygonscan.com/token/${result.blockchain.contractAddress}?a=${result.blockchain.tokenId}`
+  }
+  return DEFAULT_CONTRACT_URL
+}
+
+function buildNftLink(result) {
+  if (result.coa.nftUrl) return result.coa.nftUrl
+  if (result.blockchain?.verified && result.blockchain.tokenId) {
+    return `https://opensea.io/assets/matic/${result.blockchain.contractAddress}/${result.blockchain.tokenId}`
+  }
+  return ''
+}
+
+function displayLinkText(url, fallback) {
+  if (!url) return fallback
+  return url.replace(/^https?:\/\//, '')
+}
 
 function App() {
   const [coaCode, setCoaCode] = useState('')
@@ -124,6 +165,18 @@ function App() {
     setCoaCode('')
   }
 
+  const verificationUrl = result ? buildQrValue(result) : ''
+  const blockchainUrl = result ? buildBlockchainLink(result) : DEFAULT_CONTRACT_URL
+  const nftUrl = result ? buildNftLink(result) : ''
+  const certificateUrl = result?.coa.certUrl || ''
+  const hasThirdPartyAuthentication = Boolean(
+    result?.coa.authenticator ||
+    result?.coa.authenticatorNumber ||
+    result?.coa.authenticatorDate ||
+    result?.coa.authenticatorLink ||
+    result?.coa.authNotes
+  )
+
   return (
     <div className="app">
       <header>
@@ -197,7 +250,7 @@ function App() {
                 <h2>Certificate of Authenticity</h2>
                 <div className="cert-qr">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(window.location.origin + '/AUTHENTICATE/' + result.coa.code)}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(verificationUrl)}`}
                     alt="QR Code"
                   />
                   <span>#{result.coa.code}</span>
@@ -216,6 +269,11 @@ function App() {
                       onError={(e) => e.target.style.display = 'none'}
                     />
                   )}
+                  {!result.coa.imageUrl && (
+                    <div className="cert-artwork-placeholder">
+                      <span>Artwork image unavailable</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: content card */}
@@ -227,7 +285,6 @@ function App() {
                     <div className="cert-detail"><span>Artist:</span><span>{result.coa.artist}</span></div>
                     <div className="cert-detail"><span>Title:</span><span>{result.coa.title}</span></div>
                     {result.coa.date && <div className="cert-detail"><span>Date:</span><span>{result.coa.date}</span></div>}
-                    {result.coa.completionDate && <div className="cert-detail"><span>Completion Date:</span><span>{new Date(result.coa.completionDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>}
                     {result.coa.medium && <div className="cert-detail"><span>Medium:</span><span>{result.coa.medium}</span></div>}
                     {result.coa.size && <div className="cert-detail"><span>Dimensions:</span><span>{result.coa.size}</span></div>}
                     {result.coa.edition && <div className="cert-detail"><span>Edition:</span><span>{result.coa.edition}</span></div>}
@@ -250,57 +307,109 @@ function App() {
 
                   <div className="cert-section">
                     <h3>Digital Authentication</h3>
-                    <div className="cert-detail">
+                    <div className="cert-detail cert-detail--multiline">
                       <span>Blockchain:</span>
                       <span>
-                        {result.blockchain?.verified ? (
-                          <a href={`https://polygonscan.com/address/${result.blockchain.contractAddress}`} target="_blank" rel="noopener noreferrer">
-                            polygonscan.com
-                          </a>
-                        ) : (
-                          <a href="https://polygonscan.com/address/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1" target="_blank" rel="noopener noreferrer">
-                            polygonscan.com
-                          </a>
-                        )}
+                        <a href={blockchainUrl} target="_blank" rel="noopener noreferrer">
+                          {displayLinkText(blockchainUrl, 'Polygon')}
+                        </a>
                       </span>
                     </div>
-                    {result.blockchain?.verified && (
-                      <div className="cert-detail">
-                        <span>NFT:</span>
+                    {certificateUrl && (
+                      <div className="cert-detail cert-detail--multiline">
+                        <span>Certificate:</span>
                         <span>
-                          <a href={`https://polygonscan.com/token/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1?a=${result.blockchain.tokenId}`} target="_blank" rel="noopener noreferrer">
-                            Token #{result.blockchain.tokenId} on {result.blockchain.network}
+                          <a href={certificateUrl} target="_blank" rel="noopener noreferrer">
+                            {displayLinkText(certificateUrl, 'ScoreDetect')}
                           </a>
                         </span>
                       </div>
                     )}
-                    <div className="cert-detail">
-                      <span>ScoreDetect:</span>
-                      <span>
-                        <a href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412" target="_blank" rel="noopener noreferrer">
-                          Verified on SKALE
-                        </a>
-                      </span>
-                    </div>
+                    {result.coa.completionDate && (
+                      <div className="cert-detail">
+                        <span>Date:</span>
+                        <span>{formatDisplayDate(result.coa.completionDate)}</span>
+                      </div>
+                    )}
                     {result.coa.assignor && <div className="cert-detail"><span>Assignor:</span><span>{result.coa.assignor}</span></div>}
                     {result.coa.assignee && <div className="cert-detail"><span>Assignee:</span><span>{result.coa.assignee}</span></div>}
-                    {result.coa.authNotes && <div className="cert-detail"><span>Notes:</span><span>{result.coa.authNotes}</span></div>}
+                    {nftUrl && (
+                      <div className="cert-detail cert-detail--multiline">
+                        <span>NFT:</span>
+                        <span>
+                          <a href={nftUrl} target="_blank" rel="noopener noreferrer">
+                            {displayLinkText(nftUrl, result.blockchain?.tokenId ? `Token #${result.blockchain.tokenId}` : 'OpenSea')}
+                          </a>
+                        </span>
+                      </div>
+                    )}
                   </div>
+
+                  {hasThirdPartyAuthentication && (
+                    <div className="cert-section">
+                      <h3>Third Party Authentication</h3>
+                      {result.coa.authenticator && <div className="cert-detail"><span>Name:</span><span>{result.coa.authenticator}</span></div>}
+                      {result.coa.authenticatorNumber && <div className="cert-detail"><span>Number:</span><span>{result.coa.authenticatorNumber}</span></div>}
+                      {result.coa.authenticatorDate && <div className="cert-detail"><span>Date:</span><span>{formatDisplayDate(result.coa.authenticatorDate)}</span></div>}
+                      {result.coa.authenticatorLink && (
+                        <div className="cert-detail cert-detail--multiline">
+                          <span>Link:</span>
+                          <span>
+                            <a href={result.coa.authenticatorLink} target="_blank" rel="noopener noreferrer">
+                              {displayLinkText(result.coa.authenticatorLink, 'View certificate')}
+                            </a>
+                          </span>
+                        </div>
+                      )}
+                      {result.coa.authNotes && (
+                        <div className="cert-auth-note">
+                          {result.coa.authNotes}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {result.blockchain?.verified && (
+                    <div className="cert-section">
+                      <h3>NFT Record</h3>
+                      <div className="cert-detail">
+                        <span>Status:</span>
+                        <span>Minted on {result.blockchain.network}</span>
+                      </div>
+                      <div className="cert-detail">
+                        <span>Token ID:</span>
+                        <span>{result.blockchain.tokenId}</span>
+                      </div>
+                      <div className="cert-detail cert-detail--multiline">
+                        <span>Owner:</span>
+                        <span>{result.blockchain.owner}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Footer */}
               <div className="cert-footer">
-                <div className="cert-footer-logos">
-                  <span>Powered by:</span>
-                  <a href="https://explorer.scoredetect.com/certificate/b0066589-8263-4ece-92d4-321b51778412" target="_blank" rel="noopener noreferrer" className="footer-partner">
+                <div className="cert-footer-meta">
+                  {result.coa.authNotes && (
+                    <div className="cert-footer-note">{result.coa.authNotes}</div>
+                  )}
+                  <div className="cert-footer-logos">
+                    <span>Powered by:</span>
+                    <a href={certificateUrl || 'https://scoredetect.com'} target="_blank" rel="noopener noreferrer" className="footer-partner">
+                      <img src="/logo.png" alt="TrueCOA" />
+                      <span>TrueCOA</span>
+                    </a>
+                    <a href={certificateUrl || 'https://scoredetect.com'} target="_blank" rel="noopener noreferrer" className="footer-partner">
                     <img src="/scoredetect.png" alt="ScoreDetect" />
                     <span>ScoreDetect</span>
-                  </a>
-                  <a href="https://polygonscan.com/address/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1" target="_blank" rel="noopener noreferrer" className="footer-partner">
-                    <img src="/polygon.png" alt="Polygon" />
-                    <span>Polygon</span>
-                  </a>
+                    </a>
+                    <a href={blockchainUrl} target="_blank" rel="noopener noreferrer" className="footer-partner">
+                      <img src="/polygon.png" alt="Polygon" />
+                      <span>Polygon</span>
+                    </a>
+                  </div>
                 </div>
                 <div className="cert-footer-text">
                   Secured by Polygon blockchain.<br />Transparent Authenticity.

@@ -204,7 +204,11 @@ async function getCOAFromSheet(coaCode) {
   // First row contains headers - normalize to lowercase with underscores
   // Example: "COA Code" becomes "coa_code"
   // Handle duplicate column names by appending _2, _3, etc.
-  const rawHeaders = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_'));
+  const rawHeaders = rows[0].map(h => String(h)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, ''));
   const headerCount = {};
   const headers = rawHeaders.map(h => {
     headerCount[h] = (headerCount[h] || 0) + 1;
@@ -441,18 +445,27 @@ app.get('/api/verify/:coaCode', async (req, res) => {
     const artist = coaData.signer || coaData.artist || coaData.Artist || '';
     const title = coaData.title || coaData.Title || 'Untitled';
     const description = coaData.description || coaData.Description || '';
-    const provenance = coaData.providence || coaData.provenance || coaData['notes_/_providence'] || '';
+    const provenance = coaData.providence || coaData.provenance || coaData.notes_providence || '';
     const medium = coaData.medium || coaData.Medium || '';
     const condition = coaData.condition || coaData.Condition || '';
-    const size = coaData.size || '';
-    const edition = coaData.edition || coaData.Edition || '';
+    const size = coaData.size || coaData.dimensions || '';
+    const edition = coaData.edition || coaData.edition_ || coaData.Edition || '';
     const year = coaData.date || coaData.Date || coaData.year || '';
     const imageUrl = coaData.image_url || coaData.Image_URL || '';
     const sku = coaData.sku || coaData.SKU || '';
     const assignor = coaData.assignor || coaData.authenticator || '';
     const assignee = coaData.assignee || '';
-    const authNotes = coaData.third_party_authentication_notes || '';
+    const authNotes = coaData.third_party_authentication_notes || coaData.auth_notes || '';
     const completionDate = coaData.completion_date || '';
+    const qrCodeUrl = coaData.qr_code || '';
+    const shortUrl = coaData.short_url || '';
+    const blockchainUrl = coaData.blockchain_url || '';
+    const nftUrl = coaData.nft_url || '';
+    const certUrl = coaData.cert_url || '';
+    const authenticator = coaData.authenticator || '';
+    const authenticatorNumber = coaData.authenticator_number || coaData.number || '';
+    const authenticatorDate = coaData.authenticator_date || '';
+    const authenticatorLink = coaData.third_party_coa_link || coaData.authenticator_link || '';
 
     // Build image URL - prefer Image_URL from sheet
     let nftImage = imageUrl;
@@ -510,6 +523,16 @@ app.get('/api/verify/:coaCode', async (req, res) => {
         assignor,
         assignee,
         authNotes,
+        authenticator,
+        authenticatorNumber,
+        authenticatorDate,
+        authenticatorLink,
+        qrCodeUrl,
+        shortUrl,
+        blockchainUrl,
+        nftUrl,
+        certUrl,
+        sku,
         imageUrl: imageUrl
       },
       blockchain: blockchainStatus,
