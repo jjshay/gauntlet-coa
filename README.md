@@ -177,6 +177,7 @@ gauntlet-coa/
 │
 ├── scripts/                   # Deployment scripts
 │   └── deploy.js             # Hardhat deployment script
+│   └── mint.js               # Manual COA NFT minting script
 │
 ├── backend/                   # Express.js API server
 │   ├── index.js              # Main server file
@@ -360,6 +361,35 @@ cd frontend && npm run dev
 ```bash
 npx hardhat run scripts/deploy.js --network polygon
 ```
+
+### Mint A COA NFT
+The minting flow is manual and uses the root Hardhat script. It mints one COA code
+to a recipient wallet using the live metadata URL at
+`https://coa.up.railway.app/api/verify/:coaCode`.
+
+Required root `.env`:
+```env
+PRIVATE_KEY=your_polygon_wallet_private_key
+```
+
+Optional runtime variables:
+```bash
+COA_CODE=W1
+RECIPIENT=0xYourRecipientWallet
+```
+
+Run:
+```bash
+COA_CODE=W1 RECIPIENT=0xYourRecipientWallet npm run mint
+```
+
+What it does:
+- checks whether the COA code is already minted
+- uses `https://coa.up.railway.app/api/verify/<COA_CODE>` as the token URI
+- calls `mintCOA(recipient, coaCode, metadataUri)` on Polygon
+- prints the resulting token ID and Polygonscan link
+
+Source: [mint.js](/Users/johnshay/gauntlet-coa/scripts/mint.js)
 
 ### Backend (Railway)
 1. Connect GitHub repo to Railway
