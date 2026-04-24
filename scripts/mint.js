@@ -7,8 +7,8 @@ async function main() {
   const coaCode = process.env.COA_CODE || "291045";
   const recipientAddress = process.env.RECIPIENT || (await ethers.provider.getSigner()).address;
 
-  // Metadata URI - you can update this to point to IPFS or your API
-  const metadataUri = `https://coa.up.railway.app/api/verify/${coaCode}`;
+  // Metadata URI - can be overridden explicitly by the generator
+  const metadataUri = process.env.METADATA_URI || `https://coa.up.railway.app/api/verify/${coaCode}`;
 
   console.log("Minting COA NFT...");
   console.log("Contract:", CONTRACT_ADDRESS);

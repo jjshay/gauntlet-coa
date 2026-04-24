@@ -597,9 +597,23 @@ app.get('/api/image/:coaCode', async (req, res) => {
       }
     }
 
-    // Redirect to the image URL
-    // 302 = temporary redirect (allows URL to change in future)
-    res.redirect(imageUrl);
+    // Proxy the image bytes instead of redirecting
+    // Google Drive sets cross-origin-embedder-policy: require-corp
+    // which blocks <img> tags on other domains from loading via redirect
+    const imageResponse = await fetch(imageUrl, { redirect: 'follow' });
+
+    if (!imageResponse.ok) {
+      return res.status(502).json({ error: 'Failed to fetch image from source' });
+    }
+
+    // Forward content-type and cache for 1 hour
+    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'public, max-age=3600');
+
+    // Pipe the image stream to the response
+    const buffer = Buffer.from(await imageResponse.arrayBuffer());
+    res.send(buffer);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch image' });
   }

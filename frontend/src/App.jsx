@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 const DEFAULT_CONTRACT_URL = 'https://polygonscan.com/address/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1'
-
 function formatDisplayDate(value) {
   if (!value) return ''
 
@@ -48,6 +47,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [showCert, setShowCert] = useState(false)
   const [showScanner, setShowScanner] = useState(false)
   const scannerRef = useRef(null)
   const html5QrCodeRef = useRef(null)
@@ -162,6 +162,7 @@ function App() {
   const resetForm = () => {
     setResult(null)
     setError(null)
+    setShowCert(false)
     setCoaCode('')
   }
 
@@ -169,6 +170,7 @@ function App() {
   const blockchainUrl = result ? buildBlockchainLink(result) : DEFAULT_CONTRACT_URL
   const nftUrl = result ? buildNftLink(result) : ''
   const certificateUrl = result?.coa.certUrl || ''
+  const certificateImageUrl = result?.coa.imageUrl ? `${API_URL}/api/image/${result.coa.code}` : ''
   const hasThirdPartyAuthentication = Boolean(
     result?.coa.authenticator ||
     result?.coa.authenticatorNumber ||
@@ -231,21 +233,33 @@ function App() {
 
             {error && <div className="error-message">{error}</div>}
           </div>
+        ) : result && !showCert ? (
+          <div className="verified-landing">
+            <div className="verified-badge">&#10003;</div>
+            <h1>Certificate Verified</h1>
+            <p className="verified-intro">
+              <strong>"{result.coa.title}"</strong> by <strong>{result.coa.artist}</strong> has been authenticated and cryptographically secured on the Polygon blockchain.
+            </p>
+            <div className="verified-actions">
+              <button className="action-btn action-btn--primary" onClick={() => setShowCert(true)}>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                View Visual NFT Online
+              </button>
+              <button className="action-btn action-btn--secondary" onClick={() => { setShowCert(true); setTimeout(() => window.print(), 500) }}>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Download PDF of COA
+              </button>
+            </div>
+            <button className="back-link" onClick={resetForm}>Verify a different certificate</button>
+          </div>
         ) : (
           <div className="result-section">
-            <div className="coa-certificate">
-              {/* Translucent background image */}
-              {result.coa.imageUrl && (
-                <div className="coa-bg-image">
-                  <img
-                    src={`${API_URL}/api/image/${result.coa.code}`}
-                    alt=""
-                    onError={(e) => e.target.parentElement.style.display = 'none'}
-                  />
-                </div>
-              )}
+            <div
+              className="coa-certificate"
+              style={certificateImageUrl ? { '--coa-bg-image': `url("${certificateImageUrl}")` } : undefined}
+            >
 
-              {/* Title bar */}
+              {/* ===== TITLE BAR (above metallic strip) ===== */}
               <div className="cert-title-bar">
                 <h2>Certificate of Authenticity</h2>
                 <div className="cert-qr">
@@ -257,162 +271,136 @@ function App() {
                 </div>
               </div>
 
-              {/* Two-column body */}
-              <div className="cert-body">
-                {/* Left: artwork thumbnail */}
-                <div className="cert-left">
-                  {result.coa.imageUrl && (
-                    <img
-                      src={`${API_URL}/api/image/${result.coa.code}`}
-                      alt={result.coa.title}
-                      className="cert-artwork"
-                      onError={(e) => e.target.style.display = 'none'}
-                    />
-                  )}
-                  {!result.coa.imageUrl && (
-                    <div className="cert-artwork-placeholder">
-                      <span>Artwork image unavailable</span>
-                    </div>
-                  )}
-                </div>
+              {/* ===== METALLIC STRIP GAP ===== */}
+              <div className="cert-strip-gap"></div>
 
-                {/* Right: content card */}
-                <div className="cert-right">
-                  <img src="/logo.png" alt="TrueCOA" className="cert-logo" />
-
-                  <div className="cert-section">
-                    <h3>Details</h3>
-                    <div className="cert-detail"><span>Artist:</span><span>{result.coa.artist}</span></div>
-                    <div className="cert-detail"><span>Title:</span><span>{result.coa.title}</span></div>
-                    {result.coa.date && <div className="cert-detail"><span>Date:</span><span>{result.coa.date}</span></div>}
-                    {result.coa.medium && <div className="cert-detail"><span>Medium:</span><span>{result.coa.medium}</span></div>}
-                    {result.coa.size && <div className="cert-detail"><span>Dimensions:</span><span>{result.coa.size}</span></div>}
-                    {result.coa.edition && <div className="cert-detail"><span>Edition:</span><span>{result.coa.edition}</span></div>}
-                    {result.coa.condition && <div className="cert-detail"><span>Condition:</span><span>{result.coa.condition}</span></div>}
-                  </div>
-
-                  {result.coa.description && (
-                    <div className="cert-section">
-                      <h3>Description</h3>
-                      <p className="cert-text">{result.coa.description}</p>
-                    </div>
-                  )}
-
-                  {result.coa.provenance && (
-                    <div className="cert-section">
-                      <h3>Provenance</h3>
-                      <p className="cert-text">{result.coa.provenance}</p>
-                    </div>
-                  )}
-
-                  <div className="cert-section">
-                    <h3>Digital Authentication</h3>
-                    <div className="cert-detail cert-detail--multiline">
-                      <span>Blockchain:</span>
-                      <span>
-                        <a href={blockchainUrl} target="_blank" rel="noopener noreferrer">
-                          {displayLinkText(blockchainUrl, 'Polygon')}
-                        </a>
-                      </span>
-                    </div>
-                    {certificateUrl && (
-                      <div className="cert-detail cert-detail--multiline">
-                        <span>Certificate:</span>
-                        <span>
-                          <a href={certificateUrl} target="_blank" rel="noopener noreferrer">
-                            {displayLinkText(certificateUrl, 'ScoreDetect')}
-                          </a>
-                        </span>
+              {/* ===== MAIN CERTIFICATE (below metallic strip) ===== */}
+              <div className="cert-main">
+                {/* Two-column body: image left, content right */}
+                <div className="cert-body">
+                  <div className="cert-left">
+                    {result.coa.imageUrl && (
+                      <img
+                        src={certificateImageUrl}
+                        alt={result.coa.title}
+                        className="cert-artwork"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    )}
+                    {!result.coa.imageUrl && (
+                      <div className="cert-artwork-placeholder">
+                        <span>Artwork image unavailable</span>
                       </div>
                     )}
-                    {result.coa.completionDate && (
+                  </div>
+
+                  <div className="cert-right">
+                    <div className="cert-section">
+                      <div className="cert-detail"><span>Artist:</span><span>{result.coa.artist}</span></div>
+                      <div className="cert-detail"><span>Title:</span><span>{result.coa.title}</span></div>
+                      {result.coa.date && <div className="cert-detail"><span>Date:</span><span>{result.coa.date}</span></div>}
+                      {result.coa.medium && <div className="cert-detail"><span>Medium:</span><span>{result.coa.medium}</span></div>}
+                      {result.coa.size && <div className="cert-detail"><span>Dimensions:</span><span>{result.coa.size}</span></div>}
+                      {result.coa.edition && <div className="cert-detail"><span>Edition:</span><span>{result.coa.edition}</span></div>}
+                    </div>
+
+                    {result.coa.description && (
+                      <div className="cert-section">
+                        <h3>Description</h3>
+                        <p className="cert-text">{result.coa.description}</p>
+                      </div>
+                    )}
+
+                    {result.coa.provenance && (
+                      <div className="cert-section">
+                        <h3>Provenance</h3>
+                        <p className="cert-text">{result.coa.provenance}</p>
+                      </div>
+                    )}
+
+                    <div className="cert-section">
+                      <h3>Digital Authentication</h3>
+                      {result.coa.completionDate && (
+                        <div className="cert-detail">
+                          <span>Date:</span>
+                          <span>{formatDisplayDate(result.coa.completionDate)}</span>
+                        </div>
+                      )}
                       <div className="cert-detail">
-                        <span>Date:</span>
-                        <span>{formatDisplayDate(result.coa.completionDate)}</span>
-                      </div>
-                    )}
-                    {result.coa.assignor && <div className="cert-detail"><span>Assignor:</span><span>{result.coa.assignor}</span></div>}
-                    {result.coa.assignee && <div className="cert-detail"><span>Assignee:</span><span>{result.coa.assignee}</span></div>}
-                    {nftUrl && (
-                      <div className="cert-detail cert-detail--multiline">
-                        <span>NFT:</span>
+                        <span>Blockchain:</span>
                         <span>
-                          <a href={nftUrl} target="_blank" rel="noopener noreferrer">
-                            {displayLinkText(nftUrl, result.blockchain?.tokenId ? `Token #${result.blockchain.tokenId}` : 'OpenSea')}
+                          <a href={blockchainUrl} target="_blank" rel="noopener noreferrer">
+                            {result.coa.shortUrl || displayLinkText(blockchainUrl, 'Polygon')}
                           </a>
                         </span>
                       </div>
-                    )}
-                  </div>
-
-                  {hasThirdPartyAuthentication && (
-                    <div className="cert-section">
-                      <h3>Third Party Authentication</h3>
-                      {result.coa.authenticator && <div className="cert-detail"><span>Name:</span><span>{result.coa.authenticator}</span></div>}
-                      {result.coa.authenticatorNumber && <div className="cert-detail"><span>Number:</span><span>{result.coa.authenticatorNumber}</span></div>}
-                      {result.coa.authenticatorDate && <div className="cert-detail"><span>Date:</span><span>{formatDisplayDate(result.coa.authenticatorDate)}</span></div>}
-                      {result.coa.authenticatorLink && (
-                        <div className="cert-detail cert-detail--multiline">
-                          <span>Link:</span>
+                      {certificateUrl && (
+                        <div className="cert-detail">
+                          <span>Certificate:</span>
                           <span>
-                            <a href={result.coa.authenticatorLink} target="_blank" rel="noopener noreferrer">
-                              {displayLinkText(result.coa.authenticatorLink, 'View certificate')}
+                            <a href={certificateUrl} target="_blank" rel="noopener noreferrer">
+                              {certificateUrl.match(/([a-f0-9-]{8,})/)?.[1] || 'ScoreDetect'}
                             </a>
                           </span>
                         </div>
                       )}
-                      {result.coa.authNotes && (
-                        <div className="cert-auth-note">
-                          {result.coa.authNotes}
-                        </div>
-                      )}
                     </div>
-                  )}
 
-                  {result.blockchain?.verified && (
-                    <div className="cert-section">
-                      <h3>NFT Record</h3>
-                      <div className="cert-detail">
-                        <span>Status:</span>
-                        <span>Minted on {result.blockchain.network}</span>
+                    {hasThirdPartyAuthentication && (
+                      <div className="cert-section">
+                        <h3>Third Party Authentication</h3>
+                        {result.coa.authenticator && <div className="cert-detail"><span>Name:</span><span>{result.coa.authenticator}</span></div>}
+                        {result.coa.authenticatorNumber && <div className="cert-detail"><span>Number:</span><span>{result.coa.authenticatorNumber}</span></div>}
+                        {result.coa.authenticatorDate && <div className="cert-detail"><span>Date:</span><span>{formatDisplayDate(result.coa.authenticatorDate)}</span></div>}
+                        {result.coa.authenticatorLink && (
+                          <div className="cert-detail cert-detail--multiline">
+                            <span>Link:</span>
+                            <span>
+                              <a href={result.coa.authenticatorLink} target="_blank" rel="noopener noreferrer">
+                                {displayLinkText(result.coa.authenticatorLink, 'View certificate')}
+                              </a>
+                            </span>
+                          </div>
+                        )}
+                        {result.coa.authNotes && (
+                          <div className="cert-auth-note">{result.coa.authNotes}</div>
+                        )}
                       </div>
-                      <div className="cert-detail">
-                        <span>Token ID:</span>
-                        <span>{result.blockchain.tokenId}</span>
+                    )}
+
+                    {result.blockchain?.verified && (
+                      <div className="cert-section">
+                        <h3>NFT Record</h3>
+                        <div className="cert-detail"><span>Status:</span><span>Minted on {result.blockchain.network}</span></div>
+                        <div className="cert-detail"><span>Token ID:</span><span>{result.blockchain.tokenId}</span></div>
+                        <div className="cert-detail cert-detail--multiline"><span>Owner:</span><span>{result.blockchain.owner}</span></div>
                       </div>
-                      <div className="cert-detail cert-detail--multiline">
-                        <span>Owner:</span>
-                        <span>{result.blockchain.owner}</span>
-                      </div>
+                    )}
+
+                    <div className="cert-created">
+                      {result.coa.completionDate && <span>Created on {formatDisplayDate(result.coa.completionDate)}</span>}
+                      <span className="cert-verify-url">{verificationUrl}</span>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Footer */}
-              <div className="cert-footer">
-                <div className="cert-footer-meta">
-                  {result.coa.authNotes && (
-                    <div className="cert-footer-note">{result.coa.authNotes}</div>
-                  )}
+                {/* Footer logos */}
+                <div className="cert-footer">
                   <div className="cert-footer-logos">
                     <span>Powered by:</span>
                     <a href={certificateUrl || 'https://scoredetect.com'} target="_blank" rel="noopener noreferrer" className="footer-partner">
-                      <img src="/logo.png" alt="TrueCOA" />
-                      <span>TrueCOA</span>
+                      <img src="/logo.png" alt="TrueCOA" /><span>TrueCOA</span>
                     </a>
                     <a href={certificateUrl || 'https://scoredetect.com'} target="_blank" rel="noopener noreferrer" className="footer-partner">
-                    <img src="/scoredetect.png" alt="ScoreDetect" />
-                    <span>ScoreDetect</span>
+                      <img src="/scoredetect.png" alt="ScoreDetect" /><span>ScoreDetect</span>
                     </a>
                     <a href={blockchainUrl} target="_blank" rel="noopener noreferrer" className="footer-partner">
-                      <img src="/polygon.png" alt="Polygon" />
-                      <span>Polygon</span>
+                      <img src="/polygon.png" alt="Polygon" /><span>Polygon</span>
                     </a>
                   </div>
-                </div>
-                <div className="cert-footer-text">
-                  Secured by Polygon blockchain.<br />Transparent Authenticity.
+                  <div className="cert-footer-text">
+                    Secured by Polygon blockchain.<br />Transparent Authenticity.
+                  </div>
                 </div>
               </div>
             </div>
