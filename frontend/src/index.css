@@ -217,6 +217,25 @@ main {
   font-size: 0.9rem;
 }
 
+.warning-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #ffcc80;
+  font-size: 0.9rem;
+}
+
+.create-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.create-actions .verify-btn,
+.create-actions .scan-btn {
+  flex: 1 1 180px;
+  justify-content: center;
+}
+
 .verify-section h1 {
   font-family: 'Playfair Display', serif;
   font-size: 2.5rem;
@@ -1035,6 +1054,14 @@ footer p {
 }
 
 @media (max-width: 640px) {
+  main {
+    padding: 1.25rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
   .verify-section h1 {
     font-size: 1.75rem;
   }

@@ -17,6 +17,7 @@ const DEFAULT_CREATE_FORM = {
   sku: '',
   assignee: '',
   recipient: '',
+  createScoreDetect: false,
   mintPolygon: false
 }
 function formatDisplayDate(value) {
@@ -43,7 +44,7 @@ function buildBlockchainLink(result) {
   if (result.blockchain?.verified && result.blockchain.tokenId) {
     return `https://polygonscan.com/token/${result.blockchain.contractAddress}?a=${result.blockchain.tokenId}`
   }
-  return DEFAULT_CONTRACT_URL
+  return ''
 }
 
 function buildNftLink(result) {
@@ -52,6 +53,78 @@ function buildNftLink(result) {
     return `https://opensea.io/assets/matic/${result.blockchain.contractAddress}/${result.blockchain.tokenId}`
   }
   return ''
+}
+
+function buildCertificateImageUrl(result) {
+  if (!result?.coa?.imageUrl) return ''
+  if (result.coa.imageProxy === false) return result.coa.imageUrl
+  return `${API_URL}/api/image/${result.coa.code}`
+}
+
+function buildCreateButtonLabel(form, creating) {
+  if (creating) return 'Creating...'
+  if (form.createScoreDetect && form.mintPolygon) return 'Create + ScoreDetect + Polygon NFT'
+  if (form.createScoreDetect) return 'Create + ScoreDetect'
+  if (form.mintPolygon) return 'Create + Mint Polygon NFT'
+  return 'Create COA Record'
+}
+
+function buildCreatedVerificationResult(createResult) {
+  const coa = createResult?.coa
+  if (!coa?.coaCode) return null
+
+  const code = coa.coaCode
+  const imageUrl = coa.imageUrl || ''
+  const polygon = createResult.polygon
+  const scoreDetect = createResult.scoreDetect
+  const verificationUrl = `${window.location.origin}/AUTHENTICATE/${code}`
+
+  return {
+    success: true,
+    name: `TrueCOA - ${coa.title || 'Untitled'}`,
+    image: imageUrl,
+    external_url: verificationUrl,
+    coa: {
+      code,
+      artist: coa.signer || coa.artist || '',
+      title: coa.title || 'Untitled',
+      date: coa.date || '',
+      completionDate: coa.completionDate || new Date().toISOString().slice(0, 10),
+      size: coa.dimensions || coa.size || '',
+      edition: coa.edition || '',
+      medium: coa.medium || '',
+      condition: coa.condition || '',
+      description: coa.description || '',
+      provenance: coa.provenance || '',
+      assignor: coa.assignor || '',
+      assignee: coa.assignee || '',
+      authNotes: coa.authNotes || '',
+      authenticator: coa.authenticator || '',
+      authenticatorNumber: coa.authenticatorNumber || '',
+      authenticatorDate: coa.authenticatorDate || '',
+      authenticatorLink: coa.authenticatorLink || '',
+      qrCodeUrl: coa.qrCode || '',
+      shortUrl: verificationUrl,
+      blockchainUrl: coa.blockchainUrl || polygon?.blockchainUrl || '',
+      nftUrl: coa.nftUrl || polygon?.nftUrl || '',
+      certUrl: coa.certUrl || scoreDetect?.verificationUrl || '',
+      sku: coa.sku || '',
+      imageUrl,
+      imageProxy: imageUrl.includes('drive.google.com') && !createResult.warning
+    },
+    blockchain: polygon?.tokenId ? {
+      verified: true,
+      tokenId: polygon.tokenId,
+      owner: polygon.owner,
+      contractAddress: polygon.contractAddress,
+      network: 'Polygon'
+    } : {
+      verified: false,
+      reason: 'NFT not minted on Polygon'
+    },
+    scoreDetect,
+    verifiedAt: new Date().toISOString()
+  }
 }
 
 function displayLinkText(url, fallback) {
@@ -243,11 +316,24 @@ function App() {
     handleVerify(code)
   }
 
+  const viewCreatedCOA = () => {
+    const createdResult = buildCreatedVerificationResult(createResult)
+    if (!createdResult) return
+    setMode('verify')
+    setError(null)
+    setCreateError(null)
+    setCoaCode(createdResult.coa.code)
+    setResult(createdResult)
+    setShowCert(true)
+  }
+
   const verificationUrl = result ? buildQrValue(result) : ''
-  const blockchainUrl = result ? buildBlockchainLink(result) : DEFAULT_CONTRACT_URL
+  const blockchainUrl = result ? buildBlockchainLink(result) : ''
+  const footerBlockchainUrl = blockchainUrl || DEFAULT_CONTRACT_URL
   const nftUrl = result ? buildNftLink(result) : ''
   const certificateUrl = result?.coa.certUrl || ''
-  const certificateImageUrl = result?.coa.imageUrl ? `${API_URL}/api/image/${result.coa.code}` : ''
+  const certificateImageUrl = buildCertificateImageUrl(result)
+  const hasPolygonRecord = Boolean(result?.blockchain?.verified || result?.coa.blockchainUrl)
   const hasThirdPartyAuthentication = Boolean(
     result?.coa.authenticator ||
     result?.coa.authenticatorNumber ||
@@ -272,7 +358,7 @@ function App() {
         {mode === 'create' ? (
           <div className="create-section">
             <h1>Create COA</h1>
-            <p className="subtitle">Create a certificate record, append it to the COA sheet, and optionally mint the certificate as a Polygon NFT.</p>
+            <p className="subtitle">Create a certificate record, append it to the COA sheet, and optionally create a ScoreDetect record and Polygon NFT.</p>
 
             <form className="create-form" onSubmit={handleCreateSubmit}>
               <div className="form-grid">
@@ -329,6 +415,10 @@ function App() {
                   <input name="assignee" value={createForm.assignee} onChange={handleCreateChange} placeholder="Collector or buyer name" />
                 </label>
                 <label className="checkbox-row full-width">
+                  <input name="createScoreDetect" type="checkbox" checked={createForm.createScoreDetect} onChange={handleCreateChange} />
+                  Create ScoreDetect blockchain record
+                </label>
+                <label className="checkbox-row full-width">
                   <input name="mintPolygon" type="checkbox" checked={createForm.mintPolygon} onChange={handleCreateChange} />
                   Mint Polygon NFT now
                 </label>
@@ -341,7 +431,7 @@ function App() {
               </div>
 
               <button className="verify-btn create-submit" type="submit" disabled={creating}>
-                {creating ? 'Creating...' : createForm.mintPolygon ? 'Create + Mint on Polygon' : 'Create COA Record'}
+                {buildCreateButtonLabel(createForm, creating)}
               </button>
             </form>
 
@@ -353,15 +443,37 @@ function App() {
                   <span className="result-label">COA Created</span>
                   <strong>{createResult.coa.coaCode}</strong>
                 </div>
-                {createResult.warning && <p className="warning-message">{createResult.warning}: {createResult.sheetError}</p>}
-                {createResult.polygon && (
+                {createResult.warning && (
+                  <p className="warning-message">
+                    {createResult.warning}{createResult.sheetError ? `: ${createResult.sheetError}` : ''}
+                  </p>
+                )}
+                {createResult.operationErrors?.length > 0 && (
+                  <ul className="warning-list">
+                    {createResult.operationErrors.map((operationError) => (
+                      <li key={`${operationError.service}-${operationError.message}`}>
+                        {operationError.service}: {operationError.message}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {createResult.scoreDetect && (
                   <div className="result-links">
-                    <a href={createResult.polygon.blockchainUrl} target="_blank" rel="noopener noreferrer">Polygon token</a>
-                    {createResult.polygon.transactionUrl && <a href={createResult.polygon.transactionUrl} target="_blank" rel="noopener noreferrer">Transaction</a>}
-                    {createResult.polygon.nftUrl && <a href={createResult.polygon.nftUrl} target="_blank" rel="noopener noreferrer">OpenSea</a>}
+                    {createResult.scoreDetect.verificationUrl && <a href={createResult.scoreDetect.verificationUrl} target="_blank" rel="noopener noreferrer">ScoreDetect record</a>}
+                    {createResult.scoreDetect.transactionUrl && <a href={createResult.scoreDetect.transactionUrl} target="_blank" rel="noopener noreferrer">ScoreDetect transaction</a>}
                   </div>
                 )}
-                <button className="scan-btn" onClick={verifyCreatedCOA}>Verify This COA</button>
+                {createResult.polygon && (
+                  <div className="result-links">
+                    {createResult.polygon.nftUrl && <a href={createResult.polygon.nftUrl} target="_blank" rel="noopener noreferrer">Open NFT COA Image</a>}
+                    {createResult.polygon.blockchainUrl && <a href={createResult.polygon.blockchainUrl} target="_blank" rel="noopener noreferrer">Polygon token</a>}
+                    {createResult.polygon.transactionUrl && <a href={createResult.polygon.transactionUrl} target="_blank" rel="noopener noreferrer">Polygon transaction</a>}
+                  </div>
+                )}
+                <div className="create-actions">
+                  <button className="verify-btn" onClick={viewCreatedCOA}>View COA</button>
+                  <button className="scan-btn" onClick={verifyCreatedCOA}>Verify This COA</button>
+                </div>
               </div>
             )}
           </div>
@@ -506,9 +618,13 @@ function App() {
                       <div className="cert-detail">
                         <span>Blockchain:</span>
                         <span>
-                          <a href={blockchainUrl} target="_blank" rel="noopener noreferrer">
-                            {result.coa.shortUrl || displayLinkText(blockchainUrl, 'Polygon')}
-                          </a>
+                          {blockchainUrl ? (
+                            <a href={blockchainUrl} target="_blank" rel="noopener noreferrer">
+                              {result.blockchain?.tokenId ? `Polygon token #${result.blockchain.tokenId}` : displayLinkText(blockchainUrl, 'Polygon')}
+                            </a>
+                          ) : (
+                            'Not minted on Polygon'
+                          )}
                         </span>
                       </div>
                       {certificateUrl && (
@@ -550,6 +666,14 @@ function App() {
                         <h3>NFT Record</h3>
                         <div className="cert-detail"><span>Status:</span><span>Minted on {result.blockchain.network}</span></div>
                         <div className="cert-detail"><span>Token ID:</span><span>{result.blockchain.tokenId}</span></div>
+                        {nftUrl && (
+                          <div className="cert-detail">
+                            <span>NFT:</span>
+                            <span>
+                              <a href={nftUrl} target="_blank" rel="noopener noreferrer">Open COA image</a>
+                            </span>
+                          </div>
+                        )}
                         <div className="cert-detail cert-detail--multiline"><span>Owner:</span><span>{result.blockchain.owner}</span></div>
                       </div>
                     )}
@@ -571,12 +695,12 @@ function App() {
                     <a href={certificateUrl || 'https://scoredetect.com'} target="_blank" rel="noopener noreferrer" className="footer-partner">
                       <img src="/scoredetect.png" alt="ScoreDetect" /><span>ScoreDetect</span>
                     </a>
-                    <a href={blockchainUrl} target="_blank" rel="noopener noreferrer" className="footer-partner">
+                    <a href={footerBlockchainUrl} target="_blank" rel="noopener noreferrer" className="footer-partner">
                       <img src="/polygon.png" alt="Polygon" /><span>Polygon</span>
                     </a>
                   </div>
                   <div className="cert-footer-text">
-                    Secured by Polygon blockchain.<br />Transparent Authenticity.
+                    {hasPolygonRecord ? 'Secured by Polygon blockchain.' : 'Polygon NFT not minted yet.'}<br />Transparent Authenticity.
                   </div>
                 </div>
               </div>

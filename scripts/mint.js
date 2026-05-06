@@ -8,7 +8,7 @@ async function main() {
   const recipientAddress = process.env.RECIPIENT || (await ethers.provider.getSigner()).address;
 
   // Metadata URI - can be overridden explicitly by the generator
-  const metadataUri = process.env.METADATA_URI || `https://coa.up.railway.app/api/verify/${coaCode}`;
+  const metadataUri = process.env.METADATA_URI || `https://coa.up.railway.app/api/nft/${coaCode}`;
 
   console.log("Minting COA NFT...");
   console.log("Contract:", CONTRACT_ADDRESS);

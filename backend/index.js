@@ -94,6 +94,14 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0xD55496144F8CD6904665
  */
 const POLYGON_RPC = process.env.POLYGON_RPC || 'https://1rpc.io/matic';
 
+/**
+ * ScoreDetect API configuration.
+ * The API key must stay server-side; the frontend only asks this backend
+ * to create a record when the operator checks the ScoreDetect option.
+ */
+const SCOREDETECT_API_URL = process.env.SCOREDETECT_API_URL || 'https://api.scoredetect.com';
+const SCOREDETECT_VERIFICATION_BASE_URL = process.env.SCOREDETECT_VERIFICATION_BASE_URL || 'https://scoredetect.com/verify/';
+
 // ============================================================================
 // SMART CONTRACT INTERFACE
 // ============================================================================
@@ -439,8 +447,241 @@ async function verifyNFT(coaCode) {
 }
 
 function getMetadataUri(coaCode) {
-  const base = process.env.METADATA_BASE_URL || 'https://coa.up.railway.app/api/verify';
+  const base = process.env.METADATA_BASE_URL || 'https://coa.up.railway.app/api/nft';
   return `${base.replace(/\/$/, '')}/${encodeURIComponent(coaCode)}`;
+}
+
+function getPublicApiBaseUrl(req) {
+  const configured = process.env.PUBLIC_API_BASE_URL || process.env.API_PUBLIC_URL;
+  if (configured) return configured.replace(/\/$/, '');
+
+  const forwardedProto = req.get('x-forwarded-proto')?.split(',')[0]?.trim();
+  const forwardedHost = req.get('x-forwarded-host')?.split(',')[0]?.trim();
+  const protocol = forwardedProto || req.protocol || 'https';
+  const host = forwardedHost || req.get('host');
+  return `${protocol}://${host}`;
+}
+
+function getPublicFrontendBaseUrl() {
+  return (process.env.PUBLIC_FRONTEND_URL || process.env.FRONTEND_URL || 'https://truecoa.com').replace(/\/$/, '');
+}
+
+function getCertificateImageUrl(req, coaCode) {
+  return `${getPublicApiBaseUrl(req)}/api/coa-image/${encodeURIComponent(coaCode)}.svg`;
+}
+
+function getCertificatePageUrl(coaCode) {
+  return `${getPublicFrontendBaseUrl()}/AUTHENTICATE/${encodeURIComponent(coaCode)}`;
+}
+
+function stripImageExtension(coaCode) {
+  return String(coaCode || '').replace(/\.(svg|png|jpg|jpeg)$/i, '').toUpperCase();
+}
+
+function svgEscape(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function wrapText(value, maxChars = 52, maxLines = 6) {
+  const words = String(value || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const lines = [];
+  let line = '';
+
+  words.forEach(word => {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length > maxChars && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  });
+
+  if (line) lines.push(line);
+  if (lines.length > maxLines) {
+    lines.length = maxLines;
+    lines[maxLines - 1] = `${lines[maxLines - 1].replace(/\.*$/, '')}...`;
+  }
+
+  return lines;
+}
+
+function fieldValue(coaData, names, fallback = '') {
+  for (const name of names) {
+    if (coaData[name]) return coaData[name];
+  }
+  return fallback;
+}
+
+function buildCOAFields(normalizedCode, coaData) {
+  const artist = fieldValue(coaData, ['signer', 'artist', 'Artist']);
+  const title = fieldValue(coaData, ['title', 'Title'], 'Untitled');
+  const description = fieldValue(coaData, ['description', 'Description']);
+  const provenance = fieldValue(coaData, ['providence', 'provenance', 'notes_providence']);
+  const medium = fieldValue(coaData, ['medium', 'Medium']);
+  const condition = fieldValue(coaData, ['condition', 'Condition']);
+  const size = fieldValue(coaData, ['size', 'dimensions']);
+  const edition = fieldValue(coaData, ['edition', 'edition_', 'Edition']);
+  const year = fieldValue(coaData, ['date', 'Date', 'year']);
+  const imageUrl = fieldValue(coaData, ['image_url', 'Image_URL']);
+  const sku = fieldValue(coaData, ['sku', 'SKU']);
+  const assignor = fieldValue(coaData, ['assignor', 'authenticator']);
+  const assignee = fieldValue(coaData, ['assignee']);
+  const authNotes = fieldValue(coaData, ['third_party_authentication_notes', 'auth_notes']);
+  const completionDate = fieldValue(coaData, ['completion_date']);
+  const qrCodeUrl = fieldValue(coaData, ['qr_code']);
+  const shortUrl = fieldValue(coaData, ['short_url']);
+  const blockchainUrl = fieldValue(coaData, ['blockchain_url']);
+  const nftUrl = fieldValue(coaData, ['nft_url']);
+  const certUrl = fieldValue(coaData, ['cert_url']);
+  const authenticator = fieldValue(coaData, ['authenticator']);
+  const authenticatorNumber = fieldValue(coaData, ['authenticator_number', 'number']);
+  const authenticatorDate = fieldValue(coaData, ['authenticator_date']);
+  const authenticatorLink = fieldValue(coaData, ['third_party_coa_link', 'authenticator_link']);
+
+  return {
+    code: normalizedCode,
+    artist,
+    title,
+    description,
+    provenance,
+    medium,
+    condition,
+    size,
+    edition,
+    year,
+    imageUrl,
+    sku,
+    assignor,
+    assignee,
+    authNotes,
+    completionDate,
+    qrCodeUrl,
+    shortUrl,
+    blockchainUrl,
+    nftUrl,
+    certUrl,
+    authenticator,
+    authenticatorNumber,
+    authenticatorDate,
+    authenticatorLink
+  };
+}
+
+function buildNftDescription(fields) {
+  let nftDescription = `Certificate of Authenticity for "${fields.title}" by ${fields.artist || 'Unknown artist'}.`;
+  if (fields.year) nftDescription += ` Created in ${fields.year}.`;
+  if (fields.medium) nftDescription += `\n\nMedium: ${fields.medium}`;
+  if (fields.size) nftDescription += `\nSize: ${fields.size}`;
+  if (fields.edition) nftDescription += `\nEdition: ${fields.edition}`;
+  if (fields.condition) nftDescription += `\nCondition: ${fields.condition}`;
+  if (fields.description) nftDescription += `\n\n${fields.description}`;
+  if (fields.provenance) nftDescription += `\n\nProvenance: ${fields.provenance}`;
+  nftDescription += '\n\nThis NFT represents the TrueCOA certificate image and permanent Polygon record for the physical artwork.';
+  return nftDescription.trim();
+}
+
+function buildNftAttributes(fields) {
+  const attributes = [
+    { trait_type: 'Signer', value: fields.artist || 'Unknown' },
+    { trait_type: 'Title', value: fields.title },
+    { trait_type: 'COA Code', value: fields.code }
+  ];
+  if (fields.year) attributes.push({ trait_type: 'Year', value: fields.year });
+  if (fields.medium) attributes.push({ trait_type: 'Medium', value: fields.medium });
+  if (fields.size) attributes.push({ trait_type: 'Size', value: fields.size });
+  if (fields.edition) attributes.push({ trait_type: 'Edition', value: fields.edition });
+  if (fields.condition) attributes.push({ trait_type: 'Condition', value: fields.condition });
+  if (fields.assignor) attributes.push({ trait_type: 'Assignor', value: fields.assignor });
+  if (fields.assignee) attributes.push({ trait_type: 'Assignee', value: fields.assignee });
+  attributes.push({ trait_type: 'Verified By', value: 'TrueCOA' });
+  attributes.push({ trait_type: 'Blockchain', value: 'Polygon' });
+  return attributes;
+}
+
+function buildCertificateSvg(fields, urls) {
+  const titleLines = wrapText(fields.title, 28, 2);
+  const descriptionLines = wrapText(fields.description || 'Certificate record generated by TrueCOA.', 58, 6);
+  const provenanceLines = wrapText(fields.provenance || '', 58, 4);
+  const verifyLines = wrapText(urls.certificatePageUrl, 54, 2);
+  const rows = [
+    ['Artist', fields.artist],
+    ['Date', fields.year],
+    ['Medium', fields.medium],
+    ['Dimensions', fields.size],
+    ['Edition', fields.edition],
+    ['Condition', fields.condition],
+    ['SKU', fields.sku]
+  ].filter(([, value]) => value);
+  const artwork = urls.artworkUrl
+    ? `<image href="${svgEscape(urls.artworkUrl)}" x="96" y="282" width="600" height="520" preserveAspectRatio="xMidYMid meet" />`
+    : `<rect x="96" y="282" width="600" height="520" rx="12" fill="#f4f0e7" stroke="#d9cfb8" stroke-dasharray="12 12" />
+       <text x="396" y="552" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#8b7b55" letter-spacing="2">ARTWORK IMAGE</text>`;
+
+  const titleText = titleLines.map((line, index) =>
+    `<text x="800" y="${128 + (index * 54)}" text-anchor="middle" font-family="Georgia, serif" font-size="${index ? 42 : 50}" font-weight="700" fill="#183321">${svgEscape(line)}</text>`
+  ).join('');
+
+  const rowText = rows.map(([label, value], index) => {
+    const y = 308 + (index * 43);
+    return `<text x="792" y="${y}" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#355e3b" letter-spacing="1.5">${svgEscape(label.toUpperCase())}</text>
+      <text x="1092" y="${y}" font-family="Arial, sans-serif" font-size="24" fill="#1a1a1a">${svgEscape(value)}</text>`;
+  }).join('');
+
+  const descriptionText = descriptionLines.map((line, index) =>
+    `<text x="792" y="${657 + (index * 30)}" font-family="Arial, sans-serif" font-size="24" fill="#282820">${svgEscape(line)}</text>`
+  ).join('');
+
+  const provenanceText = provenanceLines.map((line, index) =>
+    `<text x="792" y="${878 + (index * 28)}" font-family="Arial, sans-serif" font-size="22" fill="#3d3d35">${svgEscape(line)}</text>`
+  ).join('');
+
+  const verifyText = verifyLines.map((line, index) =>
+    `<text x="1032" y="${1032 + (index * 22)}" font-family="Arial, sans-serif" font-size="16" fill="#766c55">${svgEscape(line)}</text>`
+  ).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1131" viewBox="0 0 1600 1131" role="img" aria-label="TrueCOA certificate ${svgEscape(fields.code)}">
+  <defs>
+    <linearGradient id="paper" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fffdf7"/>
+      <stop offset="100%" stop-color="#f3efe5"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" x2="1">
+      <stop offset="0%" stop-color="#a88721"/>
+      <stop offset="50%" stop-color="#e4c45a"/>
+      <stop offset="100%" stop-color="#a88721"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1131" fill="#0d1a12"/>
+  <rect x="40" y="40" width="1520" height="1051" rx="18" fill="url(#paper)"/>
+  <rect x="70" y="70" width="1460" height="991" rx="8" fill="none" stroke="#c9a227" stroke-width="4"/>
+  <text x="800" y="104" text-anchor="middle" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#c9a227" letter-spacing="9">CERTIFICATE OF AUTHENTICITY</text>
+  ${titleText}
+  <rect x="88" y="218" width="620" height="666" rx="16" fill="#ffffff" stroke="#d8d1bf" stroke-width="2"/>
+  ${artwork}
+  <rect x="88" y="914" width="620" height="90" rx="14" fill="#183321"/>
+  <text x="124" y="957" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#c9a227" letter-spacing="2">TRUECOA ID</text>
+  <text x="124" y="986" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff">${svgEscape(fields.code)}</text>
+  <rect x="748" y="236" width="740" height="314" rx="16" fill="#ffffff" stroke="#d8d1bf" stroke-width="2"/>
+  ${rowText}
+  <rect x="748" y="590" width="740" height="208" rx="16" fill="#ffffff" stroke="#d8d1bf" stroke-width="2"/>
+  <text x="792" y="630" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#355e3b" letter-spacing="2">DESCRIPTION</text>
+  ${descriptionText}
+  <rect x="748" y="826" width="740" height="148" rx="16" fill="#ffffff" stroke="#d8d1bf" stroke-width="2"/>
+  <text x="792" y="862" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#355e3b" letter-spacing="2">PROVENANCE</text>
+  ${provenanceText || `<text x="792" y="908" font-family="Arial, sans-serif" font-size="22" fill="#8b8372">Recorded in the TrueCOA registry.</text>`}
+  <rect x="748" y="1006" width="740" height="46" rx="12" fill="#f1ead7" stroke="#d8d1bf" stroke-width="1"/>
+  <text x="792" y="1034" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#355e3b" letter-spacing="1.5">VERIFY</text>
+  ${verifyText}
+  <rect x="70" y="182" width="1460" height="18" fill="url(#gold)"/>
+  <text x="760" y="1076" text-anchor="end" font-family="Arial, sans-serif" font-size="18" fill="#6d634d">Rendered COA image for Polygon NFT metadata</text>
+  <text x="1488" y="1076" text-anchor="end" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#355e3b">Transparent Authenticity</text>
+</svg>`;
 }
 
 async function mintCOAOnPolygon({ coaCode, metadataUri, recipient }) {
@@ -484,6 +725,121 @@ async function mintCOAOnPolygon({ coaCode, metadataUri, recipient }) {
     blockchainUrl: `https://polygonscan.com/token/${CONTRACT_ADDRESS}?a=${tokenId.toString()}`,
     transactionUrl: `https://polygonscan.com/tx/${tx.hash}`,
     nftUrl: `https://opensea.io/assets/matic/${CONTRACT_ADDRESS}/${tokenId.toString()}`
+  };
+}
+
+// ============================================================================
+// SCOREDETECT INTEGRATION
+// ============================================================================
+
+function compactObject(value) {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, entry]) => entry !== undefined && entry !== null && entry !== '')
+  );
+}
+
+function buildScoreDetectMetadata(row) {
+  const createdAt = new Date().toISOString();
+  return compactObject({
+    type: 'certificate_of_authenticity',
+    certificateProvider: 'TrueCOA',
+    coaCode: row.coaCode,
+    signer: row.signer,
+    artist: row.signer,
+    title: row.title,
+    artDate: row.date,
+    medium: row.medium,
+    dimensions: row.dimensions,
+    edition: row.edition,
+    condition: row.condition,
+    description: row.description,
+    provenance: row.provenance,
+    assignor: row.assignor,
+    assignee: row.assignee,
+    sku: row.sku,
+    imageUrl: row.imageUrl,
+    polygonContract: CONTRACT_ADDRESS,
+    createdAt,
+    uniqueId: `truecoa_${row.coaCode}_${Date.now()}`
+  });
+}
+
+async function readJsonResponse(response, context) {
+  const text = await response.text();
+  let data = {};
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch (error) {
+      data = { message: text };
+    }
+  }
+
+  if (!response.ok) {
+    const message = data.error || data.message || response.statusText || 'Unknown error';
+    throw new Error(`${context} failed: ${response.status} ${message}`);
+  }
+
+  return data;
+}
+
+function appendVerificationId(baseUrl, id) {
+  if (!id) return '';
+  return `${baseUrl.replace(/\/$/, '')}/${encodeURIComponent(id)}`;
+}
+
+async function createScoreDetectRecord(row) {
+  const apiKey = process.env.SCOREDETECT_API_KEY;
+  if (!apiKey) {
+    throw new Error('SCOREDETECT_API_KEY is not configured for ScoreDetect records');
+  }
+
+  const baseUrl = SCOREDETECT_API_URL.replace(/\/$/, '');
+  const metadata = buildScoreDetectMetadata(row);
+  const metadataJson = JSON.stringify(metadata);
+
+  const checksumForm = new FormData();
+  if (typeof Blob === 'function') {
+    checksumForm.append(
+      'file',
+      new Blob([metadataJson], { type: 'application/json' }),
+      `${row.coaCode}.json`
+    );
+  } else {
+    checksumForm.append('file', metadataJson);
+  }
+
+  const checksumResponse = await fetch(`${baseUrl}/generate-checksum`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: checksumForm
+  });
+  const checksumData = await readJsonResponse(checksumResponse, 'ScoreDetect checksum generation');
+  const checksum = checksumData.checksum || checksumData.hash;
+  if (!checksum) {
+    throw new Error('ScoreDetect checksum generation did not return a checksum');
+  }
+
+  const certificateForm = new FormData();
+  certificateForm.append('hash', checksum);
+
+  const certificateResponse = await fetch(`${baseUrl}/create-certificate`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: certificateForm
+  });
+  const certificate = await readJsonResponse(certificateResponse, 'ScoreDetect certificate creation');
+  const certId = certificate.id || certificate.certificateId || certificate.certId || '';
+  const transactionUrl = certificate.transactionUrl || certificate.txUrl || certificate.blockchainUrl || '';
+
+  return {
+    status: 'created',
+    certId: certId ? String(certId) : '',
+    checksum,
+    verificationUrl: certificate.verificationUrl || appendVerificationId(SCOREDETECT_VERIFICATION_BASE_URL, certId),
+    blockchainUrl: transactionUrl,
+    transactionUrl,
+    createdAt: metadata.createdAt
   };
 }
 
@@ -538,18 +894,38 @@ app.post('/api/create', async (req, res) => {
 
     const metadataUri = getMetadataUri(row.coaCode);
     let polygon = null;
+    let scoreDetect = null;
+    const operationErrors = [];
+
+    if (req.body.createScoreDetect) {
+      try {
+        scoreDetect = await createScoreDetectRecord(row);
+        row.certUrl = scoreDetect.verificationUrl || row.certUrl;
+        row.status = '[scoredetect created]';
+      } catch (error) {
+        operationErrors.push({ service: 'ScoreDetect', message: error.message });
+      }
+    }
 
     if (req.body.mintPolygon) {
-      polygon = await mintCOAOnPolygon({
-        coaCode: row.coaCode,
-        metadataUri,
-        recipient: req.body.recipient
-      });
+      try {
+        polygon = await mintCOAOnPolygon({
+          coaCode: row.coaCode,
+          metadataUri,
+          recipient: req.body.recipient
+        });
 
-      row.nftTokenId = polygon.tokenId || '';
-      row.blockchainUrl = polygon.blockchainUrl || '';
-      row.nftUrl = polygon.nftUrl || '';
-      row.status = polygon.status === 'already_minted' ? '[already minted]' : '[complete]';
+        row.nftTokenId = polygon.tokenId || '';
+        row.blockchainUrl = polygon.blockchainUrl || '';
+        row.nftUrl = polygon.nftUrl || '';
+        row.status = polygon.status === 'already_minted' ? '[already minted]' : '[complete]';
+      } catch (error) {
+        operationErrors.push({ service: 'Polygon', message: error.message });
+      }
+    }
+
+    if (operationErrors.length && !scoreDetect && !polygon) {
+      row.status = '[created with warnings]';
     }
 
     row.certUrl = row.certUrl || metadataUri;
@@ -564,15 +940,20 @@ app.post('/api/create', async (req, res) => {
         warning: 'COA created but Google Sheet append failed',
         sheetError: sheetError.message,
         coa: row,
+        scoreDetect,
         polygon,
+        operationErrors,
         metadataUri
       });
     }
 
-    res.status(201).json({
+    res.status(operationErrors.length ? 207 : 201).json({
       success: true,
+      warning: operationErrors.length ? 'COA record created with warnings' : undefined,
       coa: row,
+      scoreDetect,
       polygon,
+      operationErrors,
       metadataUri,
       sheet
     });
@@ -710,11 +1091,10 @@ app.get('/api/verify/:coaCode', async (req, res) => {
     const authenticatorDate = coaData.authenticator_date || '';
     const authenticatorLink = coaData.third_party_coa_link || coaData.authenticator_link || '';
 
-    // Build image URL - prefer Image_URL from sheet
-    let nftImage = imageUrl;
-    if (!nftImage || nftImage.includes('#REF')) {
-      nftImage = '';
-    }
+    // NFT marketplaces should show the certificate itself as the media,
+    // not only the underlying artwork image.
+    const certificateImageUrl = getCertificateImageUrl(req, normalizedCode);
+    const certificatePageUrl = getCertificatePageUrl(normalizedCode);
 
     // Build rich description from all available COA fields
     let nftDescription = `Certificate of Authenticity for "${title}" by ${artist}.`;
@@ -746,8 +1126,10 @@ app.get('/api/verify/:coaCode', async (req, res) => {
       // === ERC-721 Metadata fields (for OpenSea/NFT marketplaces) ===
       name: `TrueCOA - ${title}`,
       description: nftDescription.trim(),
-      image: nftImage,
-      external_url: `https://truecoa.com/AUTHENTICATE/${normalizedCode}`,
+      image: certificateImageUrl,
+      image_url: certificateImageUrl,
+      animation_url: certificatePageUrl,
+      external_url: certificatePageUrl,
       attributes,
       // === Legacy fields (for frontend app) ===
       success: true,
@@ -791,6 +1173,44 @@ app.get('/api/verify/:coaCode', async (req, res) => {
       error: 'Internal server error',
       message: error.message
     });
+  }
+});
+
+/**
+ * Certificate Media Endpoint
+ * GET /api/coa-image/:coaCode.svg
+ *
+ * Returns a rendered certificate image for NFT marketplaces. Polygon/OpenSea
+ * read this from the token metadata `image` field, so the first visible asset
+ * is the actual COA rather than the raw artwork image.
+ */
+app.get('/api/coa-image/:coaCode', async (req, res) => {
+  try {
+    const normalizedCode = stripImageExtension(req.params.coaCode);
+    if (!normalizedCode) {
+      return res.status(400).send('COA code is required');
+    }
+
+    const coaData = await getCOAFromSheet(normalizedCode);
+    if (!coaData) {
+      return res.status(404).send('COA not found');
+    }
+
+    const fields = buildCOAFields(normalizedCode, coaData);
+    const artworkUrl = fields.imageUrl && !fields.imageUrl.includes('#REF')
+      ? `${getPublicApiBaseUrl(req)}/api/image/${encodeURIComponent(normalizedCode)}`
+      : '';
+    const svg = buildCertificateSvg(fields, {
+      artworkUrl,
+      certificatePageUrl: getCertificatePageUrl(normalizedCode)
+    });
+
+    res.set('Content-Type', 'image/svg+xml; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=300');
+    res.send(svg);
+  } catch (error) {
+    console.error('Certificate image error:', error);
+    res.status(500).send('Failed to render certificate image');
   }
 });
 
@@ -891,36 +1311,37 @@ app.get('/api/nft/:coaCode', async (req, res) => {
       return res.status(404).json({ error: 'COA not found' });
     }
 
-    // Build image URL
-    let imageUrl = coaData.image_url || '';
-    if (imageUrl.includes('drive.google.com')) {
-      const fileId = imageUrl.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1]
-        || imageUrl.match(/id=([a-zA-Z0-9_-]+)/)?.[1];
-      if (fileId) {
-        imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-      }
-    }
+    const fields = buildCOAFields(normalizedCode, coaData);
+    const certificateImageUrl = getCertificateImageUrl(req, normalizedCode);
+    const certificatePageUrl = getCertificatePageUrl(normalizedCode);
 
     // Build OpenSea-compatible metadata
     const metadata = {
-      name: `TrueCOA #${normalizedCode} - ${coaData.title || 'Untitled'}`,
-      description: `Certificate of Authenticity for "${coaData.title || 'Untitled'}" by ${coaData.signer || coaData.artist || 'Unknown'}. Verified on Polygon blockchain. ${coaData.description || ''}`.trim(),
-      image: imageUrl || `https://coa.up.railway.app/api/image/${normalizedCode}`,
-      external_url: `https://truecoa.com/AUTHENTICATE/${normalizedCode}`,
-      attributes: [
-        { trait_type: "Signer", value: coaData.signer || coaData.artist || 'Unknown' },
-        { trait_type: "Title", value: coaData.title || 'Untitled' },
-        { trait_type: "Year", value: coaData.date || 'Unknown' },
-        { trait_type: "Size", value: coaData.size || '' },
-        { trait_type: "COA Code", value: normalizedCode }
-      ]
+      name: `TrueCOA #${normalizedCode} - ${fields.title}`,
+      description: buildNftDescription(fields),
+      image: certificateImageUrl,
+      image_url: certificateImageUrl,
+      animation_url: certificatePageUrl,
+      external_url: certificatePageUrl,
+      background_color: 'F8F5EF',
+      attributes: buildNftAttributes(fields),
+      properties: {
+        category: 'Certificate of Authenticity',
+        files: [
+          {
+            uri: certificateImageUrl,
+            type: 'image/svg+xml'
+          }
+        ],
+        certificate: {
+          code: normalizedCode,
+          verificationUrl: certificatePageUrl,
+          artworkImageUrl: fields.imageUrl || ''
+        }
+      }
     };
 
-    // Add edition info if available
-    if (coaData.edition) {
-      metadata.attributes.push({ trait_type: "Edition", value: coaData.edition });
-    }
-
+    res.set('Cache-Control', 'public, max-age=300');
     res.json(metadata);
   } catch (error) {
     console.error('NFT metadata error:', error);

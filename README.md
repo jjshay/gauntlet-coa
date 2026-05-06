@@ -128,11 +128,18 @@ Looks up the certificate image URL from the sheet and proxies the image bytes.
 
 ### `GET /api/nft/:coaCode`
 
-Returns marketplace-style NFT metadata for a COA code.
+Returns marketplace-style NFT metadata for a COA code. The `image`/`image_url`
+fields point to the rendered COA media endpoint so Polygon NFT marketplaces show
+the certificate image first, with the description and traits beside it.
+
+### `GET /api/coa-image/:coaCode.svg`
+
+Returns the rendered COA image used by NFT metadata.
 
 ### `POST /api/create`
 
-Creates a COA row in Google Sheets and can optionally mint a Polygon NFT when `mintPolygon` is true.
+Creates a COA row in Google Sheets and can optionally create a ScoreDetect
+record and mint a Polygon NFT when those options are selected.
 
 ## Local Development
 
