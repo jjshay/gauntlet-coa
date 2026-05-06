@@ -1,7 +1,7 @@
 {
-  "name": "gauntlet-coa-api",
+  "name": "truecoa-api",
   "version": "1.0.0",
-  "description": "Backend API for Gauntlet Gallery COA verification",
+  "description": "Backend API for Truecoa certificate verification",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

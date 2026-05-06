@@ -52,6 +52,31 @@ header {
   width: auto;
 }
 
+.top-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.top-nav button {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0.55rem 1rem;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.top-nav button:hover,
+.top-nav button.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(201, 162, 39, 0.08);
+}
+
 /* Main Content */
 main {
   flex: 1;
@@ -67,6 +92,129 @@ main {
   text-align: center;
   max-width: 500px;
   width: 100%;
+}
+
+.create-section {
+  width: min(920px, 100%);
+}
+
+.create-section h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem;
+  text-align: center;
+  margin-bottom: 0.65rem;
+}
+
+.create-form {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  padding: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.form-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.form-grid input,
+.form-grid textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--navy);
+  color: var(--text);
+  padding: 0.85rem 0.95rem;
+  font: inherit;
+  font-size: 0.96rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.form-grid textarea {
+  resize: vertical;
+  min-height: 92px;
+}
+
+.form-grid input:focus,
+.form-grid textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.checkbox-row {
+  flex-direction: row !important;
+  align-items: center;
+  color: var(--text) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  font-size: 0.95rem !important;
+}
+
+.checkbox-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold);
+}
+
+.create-submit {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.create-result {
+  margin-top: 1.25rem;
+  border: 1px solid rgba(76, 175, 80, 0.35);
+  border-radius: 10px;
+  background: rgba(76, 175, 80, 0.08);
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.create-result strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.35rem;
+}
+
+.result-label {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.result-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.result-links a {
+  color: var(--gold);
+}
+
+.warning-message {
+  color: #ffcc80;
+  font-size: 0.9rem;
 }
 
 .verify-section h1 {

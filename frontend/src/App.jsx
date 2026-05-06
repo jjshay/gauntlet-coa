@@ -2,6 +2,23 @@ import { useState, useEffect, useRef } from 'react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 const DEFAULT_CONTRACT_URL = 'https://polygonscan.com/address/0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1'
+const DEFAULT_CREATE_FORM = {
+  coaCode: '',
+  signer: '',
+  title: '',
+  date: '',
+  medium: '',
+  dimensions: '',
+  edition: '',
+  condition: '',
+  description: '',
+  provenance: '',
+  imageUrl: '',
+  sku: '',
+  assignee: '',
+  recipient: '',
+  mintPolygon: false
+}
 function formatDisplayDate(value) {
   if (!value) return ''
 
@@ -43,12 +60,17 @@ function displayLinkText(url, fallback) {
 }
 
 function App() {
+  const [mode, setMode] = useState('verify')
   const [coaCode, setCoaCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [showCert, setShowCert] = useState(false)
   const [showScanner, setShowScanner] = useState(false)
+  const [createForm, setCreateForm] = useState(DEFAULT_CREATE_FORM)
+  const [creating, setCreating] = useState(false)
+  const [createResult, setCreateResult] = useState(null)
+  const [createError, setCreateError] = useState(null)
   const scannerRef = useRef(null)
   const html5QrCodeRef = useRef(null)
 
@@ -72,7 +94,7 @@ function App() {
 
     // Check path-based routes: /AUTHENTICATE/290745 or /verify/290745
     const path = window.location.pathname
-    const authenticateMatch = path.match(/\/(?:AUTHENTICATE|authenticate|verify)\/([A-Za-z0-9]+)/i)
+    const authenticateMatch = path.match(/\/(?:AUTHENTICATE|authenticate|verify)\/([A-Za-z0-9-]+)/i)
     if (authenticateMatch) {
       const code = authenticateMatch[1]
       setCoaCode(code)
@@ -124,14 +146,14 @@ function App() {
               let code = decodedText
 
               // Handle "AUTHENTICATE/290745" format from stickers
-              const authMatch = decodedText.match(/AUTHENTICATE\/(\d+)/i)
+              const authMatch = decodedText.match(/AUTHENTICATE\/([A-Za-z0-9-]+)/i)
               if (authMatch) {
                 code = authMatch[1]
               } else {
                 // Try URL format
                 try {
                   const url = new URL(decodedText)
-                  code = url.searchParams.get('code') || url.pathname.match(/\/(\d+)$/)?.[1] || decodedText
+                  code = url.searchParams.get('code') || url.pathname.match(/\/([A-Za-z0-9-]+)$/)?.[1] || decodedText
                 } catch {}
               }
 
@@ -166,6 +188,61 @@ function App() {
     setCoaCode('')
   }
 
+  const switchMode = (nextMode) => {
+    setMode(nextMode)
+    setError(null)
+    setCreateError(null)
+    setShowCert(false)
+  }
+
+  const handleCreateChange = (event) => {
+    const { name, value, type, checked } = event.target
+    setCreateForm((current) => ({
+      ...current,
+      [name]: type === 'checkbox' ? checked : value
+    }))
+  }
+
+  const handleCreateSubmit = async (event) => {
+    event.preventDefault()
+    setCreating(true)
+    setCreateError(null)
+    setCreateResult(null)
+
+    const payload = {
+      ...createForm,
+      recipient: createForm.recipient.trim() || undefined
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await response.json()
+
+      if (!response.ok && response.status !== 207) {
+        throw new Error(data.message || data.error || 'Failed to create COA')
+      }
+
+      setCreateResult(data)
+      setCreateForm(DEFAULT_CREATE_FORM)
+    } catch (err) {
+      setCreateError(err.message || 'Failed to create COA')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const verifyCreatedCOA = () => {
+    const code = createResult?.coa?.coaCode
+    if (!code) return
+    switchMode('verify')
+    setCoaCode(code)
+    handleVerify(code)
+  }
+
   const verificationUrl = result ? buildQrValue(result) : ''
   const blockchainUrl = result ? buildBlockchainLink(result) : DEFAULT_CONTRACT_URL
   const nftUrl = result ? buildNftLink(result) : ''
@@ -185,10 +262,110 @@ function App() {
         <div className="logo">
           <img src="/logo-white.png" alt="TrueCOA" className="logo-image" />
         </div>
+        <nav className="top-nav" aria-label="TrueCOA tools">
+          <button className={mode === 'verify' ? 'active' : ''} onClick={() => switchMode('verify')}>Verify</button>
+          <button className={mode === 'create' ? 'active' : ''} onClick={() => switchMode('create')}>Create COA</button>
+        </nav>
       </header>
 
       <main>
-        {!result ? (
+        {mode === 'create' ? (
+          <div className="create-section">
+            <h1>Create COA</h1>
+            <p className="subtitle">Create a certificate record, append it to the COA sheet, and optionally mint the certificate as a Polygon NFT.</p>
+
+            <form className="create-form" onSubmit={handleCreateSubmit}>
+              <div className="form-grid">
+                <label>
+                  COA Code
+                  <input name="coaCode" value={createForm.coaCode} onChange={handleCreateChange} placeholder="Auto-generated if blank" />
+                </label>
+                <label>
+                  Artist / Signer *
+                  <input name="signer" value={createForm.signer} onChange={handleCreateChange} required />
+                </label>
+                <label className="full-width">
+                  Title *
+                  <input name="title" value={createForm.title} onChange={handleCreateChange} required />
+                </label>
+                <label>
+                  Date
+                  <input name="date" value={createForm.date} onChange={handleCreateChange} placeholder="2026" />
+                </label>
+                <label>
+                  Medium
+                  <input name="medium" value={createForm.medium} onChange={handleCreateChange} placeholder="Screenprint on paper" />
+                </label>
+                <label>
+                  Dimensions
+                  <input name="dimensions" value={createForm.dimensions} onChange={handleCreateChange} placeholder='24" x 18"' />
+                </label>
+                <label>
+                  Edition
+                  <input name="edition" value={createForm.edition} onChange={handleCreateChange} placeholder="12 of 300" />
+                </label>
+                <label>
+                  Condition
+                  <input name="condition" value={createForm.condition} onChange={handleCreateChange} />
+                </label>
+                <label>
+                  SKU
+                  <input name="sku" value={createForm.sku} onChange={handleCreateChange} />
+                </label>
+                <label className="full-width">
+                  Image URL
+                  <input name="imageUrl" type="url" value={createForm.imageUrl} onChange={handleCreateChange} placeholder="https://..." />
+                </label>
+                <label className="full-width">
+                  Description
+                  <textarea name="description" value={createForm.description} onChange={handleCreateChange} rows="3" />
+                </label>
+                <label className="full-width">
+                  Provenance
+                  <textarea name="provenance" value={createForm.provenance} onChange={handleCreateChange} rows="3" />
+                </label>
+                <label className="full-width">
+                  Assignee
+                  <input name="assignee" value={createForm.assignee} onChange={handleCreateChange} placeholder="Collector or buyer name" />
+                </label>
+                <label className="checkbox-row full-width">
+                  <input name="mintPolygon" type="checkbox" checked={createForm.mintPolygon} onChange={handleCreateChange} />
+                  Mint Polygon NFT now
+                </label>
+                {createForm.mintPolygon && (
+                  <label className="full-width">
+                    Recipient Wallet
+                    <input name="recipient" value={createForm.recipient} onChange={handleCreateChange} placeholder="Defaults to backend signer wallet" />
+                  </label>
+                )}
+              </div>
+
+              <button className="verify-btn create-submit" type="submit" disabled={creating}>
+                {creating ? 'Creating...' : createForm.mintPolygon ? 'Create + Mint on Polygon' : 'Create COA Record'}
+              </button>
+            </form>
+
+            {createError && <div className="error-message">{createError}</div>}
+
+            {createResult && (
+              <div className="create-result">
+                <div>
+                  <span className="result-label">COA Created</span>
+                  <strong>{createResult.coa.coaCode}</strong>
+                </div>
+                {createResult.warning && <p className="warning-message">{createResult.warning}: {createResult.sheetError}</p>}
+                {createResult.polygon && (
+                  <div className="result-links">
+                    <a href={createResult.polygon.blockchainUrl} target="_blank" rel="noopener noreferrer">Polygon token</a>
+                    {createResult.polygon.transactionUrl && <a href={createResult.polygon.transactionUrl} target="_blank" rel="noopener noreferrer">Transaction</a>}
+                    {createResult.polygon.nftUrl && <a href={createResult.polygon.nftUrl} target="_blank" rel="noopener noreferrer">OpenSea</a>}
+                  </div>
+                )}
+                <button className="scan-btn" onClick={verifyCreatedCOA}>Verify This COA</button>
+              </div>
+            )}
+          </div>
+        ) : !result ? (
           <div className="verify-section">
             <h1>Certificate of Authenticity</h1>
             <br />

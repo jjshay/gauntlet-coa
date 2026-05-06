@@ -1,6 +1,6 @@
-# TrueCOA
+# Truecoa
 
-TrueCOA is a certificate-of-authenticity system for art and collectibles. The stack combines:
+Truecoa is a certificate-of-authenticity system for art and collectibles. The stack combines:
 
 - a React frontend for verification and certificate display
 - an Express backend that reads certificate metadata from Google Sheets
@@ -12,15 +12,17 @@ The current repository reflects both the live verification product and the print
 ## Current State
 
 - Frontend certificate UI is driven by backend API data from `GET /api/verify/:coaCode`
+- Frontend creation UI posts new COA records to `POST /api/create`
 - Backend verification is sheet-backed and blockchain-aware
 - Local backend is configured against spreadsheet `14GcZTEOMmfNdJvYmbS3CylAPEAz7z9NW_1rzvsfl6Ko`
+- Minimal one-file Apps Script is configured for the `COA` tab in that sheet
 - Approved horizontal print baseline exists in the exact-template work and related exported assets
 - eBay-ready COA imagery has been packaged from the approved landscape proof
 
 ## Repository Structure
 
 ```text
-gauntlet-coa/
+truecoa/
 ├── backend/                  # Express verification API
 ├── contracts/                # Solidity COA contract
 ├── docs/                     # Supporting documentation
@@ -104,12 +106,7 @@ Responsibilities:
 - produce preview / exact HTML templates
 - manage short links and generated artifacts in Drive
 
-Important note:
-
-- the backend currently defaults to sheet tab `COA`
-- parts of the Apps Script generator code still default to `COA2`
-
-That mismatch should be treated as a known integration risk until the generator path is unified.
+The current minimal Apps Script entrypoint is `google-apps-script/TrueCOA_Minimal_Code.gs`.
 
 ## API Surface
 
@@ -132,6 +129,10 @@ Looks up the certificate image URL from the sheet and proxies the image bytes.
 ### `GET /api/nft/:coaCode`
 
 Returns marketplace-style NFT metadata for a COA code.
+
+### `POST /api/create`
+
+Creates a COA row in Google Sheets and can optionally mint a Polygon NFT when `mintPolygon` is true.
 
 ## Local Development
 
@@ -170,7 +171,6 @@ Expected frontend env input:
 
 ## Recommended Next Steps
 
-1. Unify all generation paths on the same sheet tab and field contract.
-2. Promote the approved exact COA layout from local proofing into one canonical runtime template.
-3. Add a stable export path for marketplace-ready COA imagery so the process is not tied to manual local rendering.
-4. Add automated validation for the verification payload shape and frontend certificate rendering.
+1. Replace older Apps Script variants with `TrueCOA_Minimal_Code.gs` in the live Sheet project.
+2. Add a stable export path for marketplace-ready COA imagery so the process is not tied to manual local rendering.
+3. Add automated validation for the verification payload shape and frontend certificate rendering.

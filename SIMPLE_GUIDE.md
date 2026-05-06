@@ -1,4 +1,4 @@
-# Gauntlet COA - Explained Simply
+# Truecoa - Explained Simply
 
 **What this project does in one sentence:**
 It proves artwork is real using the blockchain, like a digital fingerprint that can never be faked or erased.
@@ -255,5 +255,5 @@ Yes, technically. But it's not about speculation - it's a utility NFT proving ow
 ## Contact
 
 Built by **John Shay**
-- Live Demo: [gauntlet-coa-frontend.vercel.app](https://gauntlet-coa-frontend.vercel.app)
+- Live Demo: [truecoa.com](https://truecoa.com)
 - GitHub: [@jjshay](https://github.com/jjshay)

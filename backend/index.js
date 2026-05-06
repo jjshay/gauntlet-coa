@@ -29,7 +29,10 @@
 // DEPENDENCIES
 // ============================================================================
 
-// Load environment variables from .env file (development only)
+// Load environment variables from .env files (development only)
+// Root .env carries Hardhat/Polygon signing config, backend/.env carries API config.
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 require('dotenv').config();
 
 // Express.js - Web framework for Node.js
@@ -110,7 +113,8 @@ const CONTRACT_ABI = [
   "function isCoaMinted(string memory coaCode) public view returns (bool)",
   "function getTokenIdByCoaCode(string memory coaCode) public view returns (uint256)",
   "function getCoaOwner(string memory coaCode) public view returns (address)",
-  "function tokenURI(uint256 tokenId) public view returns (string memory)"
+  "function tokenURI(uint256 tokenId) public view returns (string memory)",
+  "function mintCOA(address to, string memory coaCode, string memory uri) public returns (uint256)"
 ];
 
 // ============================================================================
@@ -155,7 +159,7 @@ async function initGoogleSheets() {
 
     const auth = new google.auth.GoogleAuth({
       credentials: credentials,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+      scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
     // Create Sheets API client
@@ -240,6 +244,133 @@ async function getCOAFromSheet(coaCode) {
   return null;
 }
 
+function normalizeHeader(value) {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function dedupeHeaders(rawHeaders) {
+  const headerCount = {};
+  return rawHeaders.map(header => {
+    const normalized = normalizeHeader(header);
+    headerCount[normalized] = (headerCount[normalized] || 0) + 1;
+    return headerCount[normalized] > 1 ? `${normalized}_${headerCount[normalized]}` : normalized;
+  });
+}
+
+function normalizeCOACreatePayload(body = {}) {
+  const rawCode = body.coaCode || body.code || body.coa_code || `TC-${Date.now()}`;
+  const coaCode = String(rawCode).trim().toUpperCase();
+  const length = String(body.length || '').trim();
+  const width = String(body.width || '').trim();
+  const dimensions = String(body.dimensions || body.size || (length && width ? `${length} x ${width}` : '')).trim();
+
+  return {
+    coaCode,
+    qrCode: String(body.qrCode || body.qr_code || '').trim(),
+    signer: String(body.signer || body.artist || '').trim(),
+    title: String(body.title || '').trim(),
+    date: String(body.date || body.artDate || body.year || '').trim(),
+    length,
+    width,
+    dimensions,
+    authenticator: String(body.authenticator || '').trim(),
+    authenticatorNumber: String(body.authenticatorNumber || body.authNumber || body.number || '').trim(),
+    authenticatorDate: String(body.authenticatorDate || body.authDate || '').trim(),
+    authenticatorLink: String(body.authenticatorLink || body.thirdPartyCoaLink || body.third_party_coa_link || '').trim(),
+    authNotes: String(body.authNotes || '').trim(),
+    condition: String(body.condition || '').trim(),
+    description: String(body.description || '').trim(),
+    provenance: String(body.provenance || body.providence || '').trim(),
+    edition: String(body.edition || '').trim(),
+    medium: String(body.medium || '').trim(),
+    assignor: String(body.assignor || body.authenticator || '').trim(),
+    assignee: String(body.assignee || '').trim(),
+    imageUrl: String(body.imageUrl || body.image_url || '').trim(),
+    sku: String(body.sku || '').trim(),
+    nftTokenId: String(body.nftTokenId || body.nft_tokenid || '').trim(),
+    shortUrl: String(body.shortUrl || body.short_url || '').trim(),
+    blockchainUrl: String(body.blockchainUrl || body.blockchain_url || '').trim(),
+    nftUrl: String(body.nftUrl || body.nft_url || '').trim(),
+    certUrl: String(body.certUrl || body.cert_url || '').trim(),
+    status: String(body.status || '[pending]').trim(),
+    completionDate: String(body.completionDate || body.completion_date || new Date().toISOString().slice(0, 10)).trim()
+  };
+}
+
+function valueForSheetHeader(header, row) {
+  const values = {
+    coa_code: row.coaCode,
+    qr_code: row.qrCode,
+    signer: row.signer,
+    artist: row.signer,
+    title: row.title,
+    date: row.date,
+    date_2: row.authenticatorDate,
+    length: row.length,
+    width: row.width,
+    size: row.dimensions,
+    dimensions: row.dimensions,
+    authenticator: row.authenticator,
+    number: row.authenticatorNumber,
+    authenticator_number: row.authenticatorNumber,
+    authenticator_date: row.authenticatorDate,
+    third_party_coa_link: row.authenticatorLink,
+    third_party_authentication_notes: row.authNotes,
+    condition: row.condition,
+    description: row.description,
+    provenance: row.provenance,
+    providence: row.provenance,
+    edition: row.edition,
+    medium: row.medium,
+    assignor: row.assignor,
+    assignee: row.assignee,
+    image_url: row.imageUrl,
+    sku: row.sku,
+    nft_tokenid: row.nftTokenId,
+    short_url: row.shortUrl,
+    blockchain_url: row.blockchainUrl,
+    nft_url: row.nftUrl,
+    cert_url: row.certUrl,
+    status: row.status,
+    completion_date: row.completionDate
+  };
+
+  return values[header] || '';
+}
+
+async function appendCOAToSheet(row) {
+  if (!sheets) {
+    throw new Error('Google Sheets not initialized - check GOOGLE_CREDENTIALS');
+  }
+
+  const headerResponse = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!1:1`
+  });
+
+  const rawHeaders = headerResponse.data.values?.[0] || [];
+  if (!rawHeaders.length) {
+    throw new Error('Google Sheet header row is empty');
+  }
+
+  const headers = dedupeHeaders(rawHeaders);
+  const values = headers.map(header => valueForSheetHeader(header, row));
+
+  const appendResponse = await sheets.spreadsheets.values.append({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A:AZ`,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: { values: [values] }
+  });
+
+  return appendResponse.data.updates || {};
+}
+
 // ============================================================================
 // BLOCKCHAIN VERIFICATION
 // ============================================================================
@@ -307,6 +438,55 @@ async function verifyNFT(coaCode) {
   }
 }
 
+function getMetadataUri(coaCode) {
+  const base = process.env.METADATA_BASE_URL || 'https://coa.up.railway.app/api/verify';
+  return `${base.replace(/\/$/, '')}/${encodeURIComponent(coaCode)}`;
+}
+
+async function mintCOAOnPolygon({ coaCode, metadataUri, recipient }) {
+  const privateKey = process.env.PRIVATE_KEY;
+  if (!privateKey) {
+    throw new Error('PRIVATE_KEY is not configured for Polygon minting');
+  }
+
+  const provider = new ethers.JsonRpcProvider(POLYGON_RPC);
+  const normalizedKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
+  const wallet = new ethers.Wallet(normalizedKey, provider);
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
+  const receiver = recipient || wallet.address;
+
+  const alreadyMinted = await contract.isCoaMinted(coaCode);
+  if (alreadyMinted) {
+    const tokenId = await contract.getTokenIdByCoaCode(coaCode);
+    const owner = await contract.getCoaOwner(coaCode);
+    return {
+      status: 'already_minted',
+      tokenId: tokenId.toString(),
+      owner,
+      contractAddress: CONTRACT_ADDRESS,
+      blockchainUrl: `https://polygonscan.com/token/${CONTRACT_ADDRESS}?a=${tokenId.toString()}`,
+      nftUrl: `https://opensea.io/assets/matic/${CONTRACT_ADDRESS}/${tokenId.toString()}`
+    };
+  }
+
+  const tx = await contract.mintCOA(receiver, coaCode, metadataUri);
+  const receipt = await tx.wait();
+  const tokenId = await contract.getTokenIdByCoaCode(coaCode);
+  const owner = await contract.getCoaOwner(coaCode);
+
+  return {
+    status: 'minted',
+    tokenId: tokenId.toString(),
+    owner,
+    txHash: tx.hash,
+    blockNumber: receipt.blockNumber,
+    contractAddress: CONTRACT_ADDRESS,
+    blockchainUrl: `https://polygonscan.com/token/${CONTRACT_ADDRESS}?a=${tokenId.toString()}`,
+    transactionUrl: `https://polygonscan.com/tx/${tx.hash}`,
+    nftUrl: `https://opensea.io/assets/matic/${CONTRACT_ADDRESS}/${tokenId.toString()}`
+  };
+}
+
 // ============================================================================
 // API ROUTES
 // ============================================================================
@@ -322,7 +502,7 @@ async function verifyNFT(coaCode) {
  *
  * @returns {Object} { status: "ok", timestamp: "ISO date string" }
  */
-app.get('/health', (req, res) => {
+function sendHealth(req, res) {
   let clientEmail = null;
   try {
     let raw = process.env.GOOGLE_CREDENTIALS || '{}';
@@ -340,6 +520,69 @@ app.get('/health', (req, res) => {
     credentialsSet: !!process.env.GOOGLE_CREDENTIALS,
     clientEmail: clientEmail
   });
+}
+
+app.get('/', sendHealth);
+app.get('/health', sendHealth);
+app.get('/api/health', sendHealth);
+
+app.post('/api/create', async (req, res) => {
+  try {
+    const row = normalizeCOACreatePayload(req.body);
+    if (!row.coaCode) {
+      return res.status(400).json({ error: 'COA code is required' });
+    }
+    if (!row.title || !row.signer) {
+      return res.status(400).json({ error: 'Title and signer/artist are required' });
+    }
+
+    const metadataUri = getMetadataUri(row.coaCode);
+    let polygon = null;
+
+    if (req.body.mintPolygon) {
+      polygon = await mintCOAOnPolygon({
+        coaCode: row.coaCode,
+        metadataUri,
+        recipient: req.body.recipient
+      });
+
+      row.nftTokenId = polygon.tokenId || '';
+      row.blockchainUrl = polygon.blockchainUrl || '';
+      row.nftUrl = polygon.nftUrl || '';
+      row.status = polygon.status === 'already_minted' ? '[already minted]' : '[complete]';
+    }
+
+    row.certUrl = row.certUrl || metadataUri;
+    row.shortUrl = row.shortUrl || metadataUri;
+
+    let sheet = null;
+    try {
+      sheet = await appendCOAToSheet(row);
+    } catch (sheetError) {
+      return res.status(207).json({
+        success: true,
+        warning: 'COA created but Google Sheet append failed',
+        sheetError: sheetError.message,
+        coa: row,
+        polygon,
+        metadataUri
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      coa: row,
+      polygon,
+      metadataUri,
+      sheet
+    });
+  } catch (error) {
+    console.error('Create COA error:', error);
+    res.status(500).json({
+      error: 'Failed to create COA',
+      message: error.message
+    });
+  }
 });
 
 /**
