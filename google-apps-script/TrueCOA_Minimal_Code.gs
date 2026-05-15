@@ -19,7 +19,7 @@
 const TRUECOA_CONFIG = {
   SPREADSHEET_ID: '14GcZTEOMmfNdJvYmbS3CylAPEAz7z9NW_1rzvsfl6Ko',
   SHEET_NAME: 'COA',
-  VERIFY_BASE_URL: 'https://truecoa.com/AUTHENTICATE',
+  VERIFY_BASE_URL: 'https://frontend-pi-three-98.vercel.app/AUTHENTICATE',
   DRIVE_FOLDER_NAME: 'TrueCOA Certificates',
   CONTRACT_ADDRESS: '0xD55496144F8CD69046656ddd5bb894c8b0C2d1b1',
   QR_SIZE: 220,
@@ -46,6 +46,7 @@ const TRUECOA_CONFIG = {
     BLOCKCHAIN_URL: ['Blockchain_URL'],
     NFT_URL: ['NFT_URL'],
     CERT_URL: ['Cert_URL'],
+    PDF_URL: ['PDF_URL', 'Generated_PDF_URL', 'Print_PDF_URL'],
     STATUS: ['Status'],
     COMPLETION_DATE: ['Completion_Date']
   }
@@ -194,7 +195,12 @@ function processCOARow_(sheet, rowNum) {
   const pdfBlob = htmlFile.getAs(MimeType.PDF).setName(baseName + '.pdf');
   const pdfFile = folder.createFile(pdfBlob);
 
-  setValue_(sheet, rowNum, headerMap, 'CERT_URL', pdfFile.getUrl());
+  const existingCertUrl = String(getValue_(updatedRow, headerMap, 'CERT_URL')).trim();
+  if (headerMap.PDF_URL !== undefined) {
+    setValue_(sheet, rowNum, headerMap, 'PDF_URL', pdfFile.getUrl());
+  } else if (!existingCertUrl) {
+    setValue_(sheet, rowNum, headerMap, 'CERT_URL', pdfFile.getUrl());
+  }
   setValue_(sheet, rowNum, headerMap, 'STATUS', '[complete]');
   setValue_(sheet, rowNum, headerMap, 'COMPLETION_DATE', new Date());
 
@@ -212,6 +218,8 @@ function buildCertData_(row, headerMap) {
   const tokenId = String(getValue_(row, headerMap, 'NFT_TOKEN_ID')).trim();
   const blockchainUrl = String(getValue_(row, headerMap, 'BLOCKCHAIN_URL')).trim() ||
     (tokenId ? 'https://polygonscan.com/token/' + TRUECOA_CONFIG.CONTRACT_ADDRESS + '?a=' + encodeURIComponent(tokenId) : '');
+  const certUrl = String(getValue_(row, headerMap, 'CERT_URL')).trim();
+  const pdfUrl = String(getValue_(row, headerMap, 'PDF_URL')).trim();
 
   return {
     code: code,
@@ -235,6 +243,9 @@ function buildCertData_(row, headerMap) {
     tokenId: tokenId,
     blockchainUrl: blockchainUrl,
     nftUrl: String(getValue_(row, headerMap, 'NFT_URL')).trim(),
+    certUrl: certUrl,
+    scoreDetectUrl: isScoreDetectUrl_(certUrl) ? certUrl : '',
+    pdfUrl: pdfUrl,
     completionDate: new Date()
   };
 }
@@ -283,7 +294,8 @@ function renderCertificateHtml_(d) {
     d.description ? '<div class="section"><h2>Description</h2><p>' + esc_(d.description) + '</p></div>' : '',
     d.provenance ? '<div class="section"><h2>Provenance</h2><p>' + esc_(d.provenance) + '</p></div>' : '',
     d.authNotes ? '<div class="section"><h2>Authentication Notes</h2><p>' + esc_(d.authNotes) + '</p></div>' : '',
-    d.tokenId ? '<div class="section"><h2>Polygon NFT</h2><p>Token ID: ' + esc_(d.tokenId) + '<br>' + esc_(d.blockchainUrl) + '</p></div>' : '',
+    d.scoreDetectUrl ? '<div class="section"><h2>ScoreDetect Certificate</h2><p><a href="' + esc_(d.scoreDetectUrl) + '">' + esc_(d.scoreDetectUrl) + '</a></p></div>' : '',
+    d.tokenId ? '<div class="section"><h2>Polygon NFT</h2><p>Token ID: ' + esc_(d.tokenId) + '<br><a href="' + esc_(d.blockchainUrl) + '">' + esc_(d.blockchainUrl) + '</a></p></div>' : '',
     '</div></div>',
     '<div class="foot"><div>Verification: ' + esc_(d.shortUrl || d.verifyUrl) + '</div><div>Generated ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'MMMM d, yyyy') + '</div></div>',
     '</main></body></html>'
@@ -354,6 +366,10 @@ function getOrCreateFolder_() {
 
 function buildVerifyUrl_(code) {
   return TRUECOA_CONFIG.VERIFY_BASE_URL.replace(/\/$/, '') + '/' + encodeURIComponent(code);
+}
+
+function isScoreDetectUrl_(value) {
+  return /^https?:\/\/([^\/]+\.)?scoredetect\.com\//i.test(String(value || '').trim());
 }
 
 function buildQrUrl_(value) {

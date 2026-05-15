@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# Forward certificate verification URLs from the current LiteSpeed/Namecheap host
+# to the deployed TrueCOA app on Vercel.
+RewriteRule ^AUTHENTICATE/?$ https://frontend-pi-three-98.vercel.app/ [R=302,L]
+RewriteRule ^AUTHENTICATE/(.*)$ https://frontend-pi-three-98.vercel.app/AUTHENTICATE/$1 [R=302,L,NE]
+RewriteRule ^authenticate/?$ https://frontend-pi-three-98.vercel.app/ [R=302,L]
+RewriteRule ^authenticate/(.*)$ https://frontend-pi-three-98.vercel.app/AUTHENTICATE/$1 [R=302,L,NE]
