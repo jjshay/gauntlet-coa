@@ -888,6 +888,55 @@ async function createScoreDetectRecord(row) {
   };
 }
 
+async function createCOAAuthenticationRecords(row, options = {}) {
+  const metadataUri = getMetadataUri(row.coaCode);
+  let polygon = null;
+  let scoreDetect = null;
+  const operationErrors = [];
+
+  if (options.createScoreDetect) {
+    try {
+      scoreDetect = await createScoreDetectRecord(row);
+      row.certUrl = scoreDetect.verificationUrl || row.certUrl;
+      row.status = '[scoredetect created]';
+    } catch (error) {
+      operationErrors.push({ service: 'ScoreDetect', message: error.message });
+    }
+  }
+
+  if (options.mintPolygon) {
+    try {
+      polygon = await mintCOAOnPolygon({
+        coaCode: row.coaCode,
+        metadataUri,
+        recipient: options.recipient
+      });
+
+      row.nftTokenId = polygon.tokenId || '';
+      row.blockchainUrl = polygon.blockchainUrl || '';
+      row.nftUrl = polygon.nftUrl || '';
+      row.status = polygon.status === 'already_minted' ? '[already minted]' : '[complete]';
+    } catch (error) {
+      operationErrors.push({ service: 'Polygon', message: error.message });
+    }
+  }
+
+  if (operationErrors.length && !scoreDetect && !polygon) {
+    row.status = '[created with warnings]';
+  }
+
+  row.certUrl = row.certUrl || metadataUri;
+  row.shortUrl = row.shortUrl || metadataUri;
+
+  return {
+    row,
+    scoreDetect,
+    polygon,
+    operationErrors,
+    metadataUri
+  };
+}
+
 // ============================================================================
 // API ROUTES
 // ============================================================================
@@ -937,44 +986,16 @@ app.post('/api/create', async (req, res) => {
       return res.status(400).json({ error: 'Title and signer/artist are required' });
     }
 
-    const metadataUri = getMetadataUri(row.coaCode);
-    let polygon = null;
-    let scoreDetect = null;
-    const operationErrors = [];
-
-    if (req.body.createScoreDetect) {
-      try {
-        scoreDetect = await createScoreDetectRecord(row);
-        row.certUrl = scoreDetect.verificationUrl || row.certUrl;
-        row.status = '[scoredetect created]';
-      } catch (error) {
-        operationErrors.push({ service: 'ScoreDetect', message: error.message });
-      }
-    }
-
-    if (req.body.mintPolygon) {
-      try {
-        polygon = await mintCOAOnPolygon({
-          coaCode: row.coaCode,
-          metadataUri,
-          recipient: req.body.recipient
-        });
-
-        row.nftTokenId = polygon.tokenId || '';
-        row.blockchainUrl = polygon.blockchainUrl || '';
-        row.nftUrl = polygon.nftUrl || '';
-        row.status = polygon.status === 'already_minted' ? '[already minted]' : '[complete]';
-      } catch (error) {
-        operationErrors.push({ service: 'Polygon', message: error.message });
-      }
-    }
-
-    if (operationErrors.length && !scoreDetect && !polygon) {
-      row.status = '[created with warnings]';
-    }
-
-    row.certUrl = row.certUrl || metadataUri;
-    row.shortUrl = row.shortUrl || metadataUri;
+    const {
+      scoreDetect,
+      polygon,
+      operationErrors,
+      metadataUri
+    } = await createCOAAuthenticationRecords(row, {
+      createScoreDetect: req.body.createScoreDetect,
+      mintPolygon: req.body.mintPolygon,
+      recipient: req.body.recipient
+    });
 
     let sheet = null;
     try {
@@ -1006,6 +1027,45 @@ app.post('/api/create', async (req, res) => {
     console.error('Create COA error:', error);
     res.status(500).json({
       error: 'Failed to create COA',
+      message: error.message
+    });
+  }
+});
+
+app.post('/api/authenticate', async (req, res) => {
+  try {
+    const row = normalizeCOACreatePayload(req.body);
+    if (!row.coaCode) {
+      return res.status(400).json({ error: 'COA code is required' });
+    }
+    if (!row.title || !row.signer) {
+      return res.status(400).json({ error: 'Title and signer/artist are required' });
+    }
+
+    const {
+      scoreDetect,
+      polygon,
+      operationErrors,
+      metadataUri
+    } = await createCOAAuthenticationRecords(row, {
+      createScoreDetect: req.body.createScoreDetect !== false,
+      mintPolygon: req.body.mintPolygon !== false,
+      recipient: req.body.recipient
+    });
+
+    res.status(operationErrors.length ? 207 : 201).json({
+      success: true,
+      warning: operationErrors.length ? 'Authentication created with warnings' : undefined,
+      coa: row,
+      scoreDetect,
+      polygon,
+      operationErrors,
+      metadataUri
+    });
+  } catch (error) {
+    console.error('Authenticate COA error:', error);
+    res.status(500).json({
+      error: 'Failed to authenticate COA',
       message: error.message
     });
   }
