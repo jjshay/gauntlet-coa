@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "name": "gauntlet-coa",
+  "title": "TrueCOA Integrated Snapshot",
+  "category": "Provenance systems",
+  "summary": "Certificate verification spans a customer interface, operational records, and a blockchain lookup.",
+  "status": "Source available; runtime not revalidated in this documentation review",
+  "visibility": "public",
+  "reviewed_on": "2026-09-11",
+  "reviewed_commit": "73e1496b5de8a1a66923f4dfcfa7a5cba343dfa1",
+  "architecture": "COA code \u2192 React interface \u2192 Express API \u2192 Sheets metadata and Polygon record.",
+  "evidence": [
+    {
+      "path": "backend/index.js",
+      "role": "Application entry point, interface, or integration boundary."
+    },
+    {
+      "path": "frontend/src/App.jsx",
+      "role": "Application entry point, interface, or integration boundary."
+    }
+  ],
+  "validation": "Repository tree and referenced source reviewed. Existing application tests, hosted deployments, paid providers, and external mutations were not re-run in this documentation review.",
+  "limitations": "A blockchain record preserves a claim's history; it does not independently establish the physical artwork's authenticity.",
+  "next_improvement": "Use truecoa as the current integrated reference and compare this related snapshot before applying future changes.",
+  "related_repositories": [
+    "gauntlet-coa-backend",
+    "gauntlet-coa-frontend",
+    "gauntlet-coa-generator",
+    "truecoa"
+  ]
+}
